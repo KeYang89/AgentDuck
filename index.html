@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck Ecosystem - Agent Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ocean-deep: #0a2463;
+            --ocean-mid: #1e5a8e;
+            --ocean-light: #3e8ed0;
+            --wave-foam: #d4f1f4;
+            --duck-yellow: #ffd43b;
+            --duck-orange: #ff922b;
+            --fish-silver: #adb5bd;
+            --sky-gradient-1: #ffeaa7;
+            --sky-gradient-2: #fab1a0;
+            --sky-gradient-3: #fd79a8;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(180deg, var(--sky-gradient-1) 0%, var(--sky-gradient-2) 40%, var(--sky-gradient-3) 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .ocean {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(180deg, var(--ocean-light) 0%, var(--ocean-mid) 40%, var(--ocean-deep) 100%);
+            border-top: 4px solid var(--wave-foam);
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 30px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                var(--wave-foam) 10px,
+                transparent 20px,
+                transparent 40px
+            );
+            opacity: 0.3;
+            animation: waveMove 8s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            top: 20px;
+            animation-duration: 10s;
+            animation-direction: reverse;
+            opacity: 0.2;
+        }
+
+        @keyframes waveMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .duck {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .duck:hover {
+            transform: scale(1.1);
+        }
+
+        .duck-body {
+            font-size: 48px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: bobFloat 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .duck-body::after {
+            content: '💧';
+            position: absolute;
+            font-size: 12px;
+            left: -10px;
+            top: 40px;
+            animation: ripple 1.5s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes ripple {
+            0%, 100% { 
+                transform: scale(0.8) translateX(0px);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: scale(1.2) translateX(-5px);
+                opacity: 0.3;
+            }
+        }
+
+        .duck.swimming .duck-body {
+            animation: swimFloat 1s ease-in-out infinite;
+        }
+
+        @keyframes swimFloat {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .duck-ripple {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 8px;
+            background: radial-gradient(ellipse at center, rgba(212, 241, 244, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: ripple 1.5s ease-out infinite;
+            opacity: 0;
+        }
+
+        .duck.swimming .duck-ripple {
+            opacity: 1;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 40px;
+                height: 8px;
+                opacity: 0.8;
+            }
+            100% {
+                width: 80px;
+                height: 16px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes bobFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .duck-thinking {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .duck-thinking.show {
+            opacity: 1;
+        }
+
+        .duck-thinking::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+
+        .duck-stats {
+            position: absolute;
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: white;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 99;
+            min-width: 140px;
+        }
+
+        .duck:hover .duck-stats {
+            opacity: 1;
+        }
+
+        .stat-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 4px 0;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .stat-hunger { background: #ff6b6b; }
+        .stat-energy { background: #4ecdc4; }
+        .stat-social { background: #ffe66d; }
+
+        .fish {
+            position: absolute;
+            font-size: 24px;
+            animation: fishSwim 5s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            z-index: 5;
+        }
+
+        .fish:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes fishSwim {
+            0%, 100% { transform: translateX(0) rotateY(0deg); }
+            50% { transform: translateX(30px) rotateY(180deg); }
+        }
+
+        .food-item {
+            position: absolute;
+            font-size: 20px;
+            animation: foodFloat 3s ease-in-out infinite;
+            cursor: grab;
+            z-index: 8;
+        }
+
+        .food-item:active {
+            cursor: grabbing;
+        }
+
+        @keyframes foodFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            font-family: 'DM Sans', sans-serif;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hud h1 {
+            font-family: 'Shrikhand', cursive;
+            color: var(--ocean-deep);
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0 var(--duck-yellow);
+        }
+
+        .hud-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2d3436;
+        }
+
+        .hud-value {
+            color: var(--ocean-mid);
+            font-weight: 700;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: white;
+            border: 3px solid var(--ocean-deep);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            background: var(--duck-yellow);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .ecosystem-log {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 16px;
+            padding: 15px 20px;
+            max-width: 300px;
+            max-height: 400px;
+            color: white;
+            font-size: 12px;
+            line-height: 1.6;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .ecosystem-log.collapsed {
+            max-height: 50px;
+            overflow: hidden;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .log-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .ecosystem-log.collapsed .log-toggle {
+            transform: rotate(180deg);
+        }
+
+        .log-content {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .log-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+
+        .log-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--duck-yellow);
+        }
+
+        .log-time {
+            color: var(--wave-foam);
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .personality-badge {
+            display: inline-block;
+            background: var(--duck-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="ocean">
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+
+        <div class="hud fade-in">
+            <h1>Duck Pond</h1>
+            <div class="hud-stat">
+                <span>🦆 Ducks:</span>
+                <span class="hud-value" id="duck-count">0</span>
+            </div>
+            <div class="hud-stat">
+                <span>🐟 Fish:</span>
+                <span class="hud-value" id="fish-count">0</span>
+            </div>
+            <div class="hud-stat">
+                <span>🦐 Shrimp:</span>
+                <span class="hud-value" id="food-count">0</span>
+            </div>
+            <div class="hud-stat">
+                <span>⏱️ Time:</span>
+                <span class="hud-value" id="time-elapsed">0s</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="addDuck()">➕ Add Duck</button>
+            <button class="btn" onclick="addFish()">🐟 Add Fish</button>
+            <button class="btn" onclick="addFood()">🦐 Add Shrimp</button>
+            <button class="btn" onclick="togglePause()">⏸️ Pause</button>
+        </div>
+
+        <div class="ecosystem-log" id="ecosystem-log">
+            <div class="log-header" onclick="toggleLog()">
+                <strong style="font-size: 14px;">📋 Ecosystem Log</strong>
+                <span class="log-toggle">▼</span>
+            </div>
+            <div class="log-content" id="log-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            ducks: [],
+            fish: [],
+            food: [],
+            isPaused: false,
+            time: 0,
+            nextDuckId: 1,
+            nextFishId: 1,
+            nextFoodId: 1
+        };
+
+        // Duck Agent Class
+        class DuckAgent {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.hunger = Math.random() * 50 + 25; // 25-75
+                this.energy = Math.random() * 50 + 50; // 50-100
+                this.social = Math.random() * 100;
+                this.personality = this.generatePersonality();
+                this.state = 'idle';
+                this.target = null;
+                this.speed = 1 + Math.random();
+                this.thinkingText = '';
+                this.thinkingTimer = 0;
+                this.lastDecisionTime = 0;
+                this.friends = [];
+                this.memories = [];
+                
+                this.element = this.createElement();
+                this.updateVisuals();
+            }
+
+            generatePersonality() {
+                const traits = ['Curious', 'Lazy', 'Social', 'Shy', 'Brave', 'Cautious', 'Energetic', 'Calm'];
+                return traits[Math.floor(Math.random() * traits.length)];
+            }
+
+            createElement() {
+                const duck = document.createElement('div');
+                duck.className = 'duck fade-in';
+                duck.style.left = this.x + 'px';
+                duck.style.top = this.y + 'px';
+                
+                duck.innerHTML = `
+                    <div class="duck-body">🦆</div>
+                    <div class="duck-ripple"></div>
+                    <div class="duck-thinking"></div>
+                    <div class="duck-stats">
+                        <div><strong>${this.personality}</strong> Duck #${this.id}</div>
+                        <div style="margin-top: 4px;">Hunger: <div class="stat-bar"><div class="stat-fill stat-hunger" style="width: ${this.hunger}%"></div></div></div>
+                        <div>Energy: <div class="stat-bar"><div class="stat-fill stat-energy" style="width: ${this.energy}%"></div></div></div>
+                        <div>Social: <div class="stat-bar"><div class="stat-fill stat-social" style="width: ${this.social}%"></div></div></div>
+                    </div>
+                `;
+                
+                duck.addEventListener('click', () => this.onInteract());
+                document.getElementById('game-container').appendChild(duck);
+                return duck;
+            }
+
+            onInteract() {
+                this.social = Math.min(100, this.social + 15);
+                this.showThought(`Hello! I'm feeling ${this.getEmotionalState()}! 😊`);
+                logEvent(`Duck #${this.id} (${this.personality}) was petted!`);
+            }
+
+            getEmotionalState() {
+                if (this.hunger > 70 && this.energy > 70) return 'happy';
+                if (this.hunger < 30) return 'hungry';
+                if (this.energy < 30) return 'tired';
+                if (this.social < 30) return 'lonely';
+                return 'content';
+            }
+
+            think() {
+                const now = Date.now();
+                if (now - this.lastDecisionTime < 2000) return;
+                
+                this.lastDecisionTime = now;
+
+                // Make decisions based on needs and personality
+                const urgentNeed = this.getUrgentNeed();
+                
+                if (urgentNeed === 'hunger') {
+                    this.seekFood();
+                } else if (urgentNeed === 'social') {
+                    this.seekCompanion();
+                } else if (urgentNeed === 'energy') {
+                    this.rest();
+                } else {
+                    this.explore();
+                }
+            }
+
+            getUrgentNeed() {
+                const needs = {
+                    hunger: 100 - this.hunger,
+                    energy: 100 - this.energy,
+                    social: this.personality === 'Social' ? 100 - this.social : 0
+                };
+
+                // Personality modifiers
+                if (this.personality === 'Lazy') needs.energy *= 1.5;
+                if (this.personality === 'Social') needs.social *= 2;
+                if (this.personality === 'Brave') needs.hunger *= 1.3; // Brave ducks hunt more
+
+                const maxNeed = Math.max(...Object.values(needs));
+                if (maxNeed < 40) return 'none';
+
+                return Object.keys(needs).find(key => needs[key] === maxNeed);
+            }
+
+            seekFood() {
+                if (this.target && (this.target.type === 'food' || this.target.type === 'fish')) return;
+
+                // Look for both shrimp and fish
+                const nearestFood = this.findNearest(gameState.food);
+                const nearestFish = this.findNearest(gameState.fish);
+                
+                // Choose the closer target
+                let target = null;
+                let targetType = null;
+                
+                const foodDist = nearestFood ? this.distanceTo(nearestFood) : Infinity;
+                const fishDist = nearestFish ? this.distanceTo(nearestFish) : Infinity;
+                
+                if (foodDist < fishDist && nearestFood) {
+                    target = nearestFood;
+                    targetType = 'food';
+                    this.showThought('Looking for shrimp... 🦐');
+                    logEvent(`Duck #${this.id} is hunting for shrimp`);
+                } else if (nearestFish) {
+                    target = nearestFish;
+                    targetType = 'fish';
+                    this.showThought('Hunting fish... 🎣');
+                    logEvent(`Duck #${this.id} is hunting for fish`);
+                }
+                
+                if (target) {
+                    this.target = { type: targetType, obj: target };
+                    this.state = 'seeking-food';
+                }
+            }
+
+            seekCompanion() {
+                if (this.target && this.target.type === 'duck') return;
+
+                const otherDucks = gameState.ducks.filter(d => d !== this);
+                const nearestDuck = this.findNearest(otherDucks);
+                
+                if (nearestDuck) {
+                    this.target = { type: 'duck', obj: nearestDuck };
+                    this.state = 'socializing';
+                    this.showThought('Let\'s hang out! 🤝');
+                    logEvent(`Duck #${this.id} (${this.personality}) seeks companionship`);
+                }
+            }
+
+            rest() {
+                this.state = 'resting';
+                this.showThought('Taking a nap... 💤');
+                logEvent(`Duck #${this.id} is resting`);
+            }
+
+            explore() {
+                if (Math.random() < 0.3) {
+                    const container = document.getElementById('game-container');
+                    // Keep exploration near water surface
+                    const waterSurfaceMin = container.clientHeight * 0.35;
+                    const waterSurfaceMax = container.clientHeight * 0.50;
+                    this.target = {
+                        type: 'position',
+                        x: Math.random() * (container.clientWidth - 100),
+                        y: waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin)
+                    };
+                    this.state = 'exploring';
+                    
+                    const thoughts = [
+                        'What\'s over there? 🔍',
+                        'Time to explore! 🗺️',
+                        'I wonder...',
+                        'Adventure awaits! ⛵'
+                    ];
+                    this.showThought(thoughts[Math.floor(Math.random() * thoughts.length)]);
+                }
+            }
+
+            findNearest(objects) {
+                if (objects.length === 0) return null;
+                
+                return objects.reduce((nearest, obj) => {
+                    const dist = this.distanceTo(obj);
+                    const nearestDist = this.distanceTo(nearest);
+                    return dist < nearestDist ? obj : nearest;
+                });
+            }
+
+            distanceTo(obj) {
+                if (!obj) return Infinity;
+                const dx = obj.x - this.x;
+                const dy = obj.y - this.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+
+                // Decay needs over time
+                this.hunger = Math.max(0, this.hunger - deltaTime * 0.8);
+                this.energy = Math.max(0, this.energy - deltaTime * 0.5);
+                this.social = Math.max(0, this.social - deltaTime * 0.3);
+
+                // Make decisions
+                this.think();
+
+                // Execute current behavior
+                this.executeBehavior(deltaTime);
+
+                // Update visuals
+                this.updateVisuals();
+
+                // Update thinking bubble timer
+                if (this.thinkingTimer > 0) {
+                    this.thinkingTimer -= deltaTime;
+                    if (this.thinkingTimer <= 0) {
+                        this.hideThought();
+                    }
+                }
+            }
+
+            executeBehavior(deltaTime) {
+                switch (this.state) {
+                    case 'seeking-food':
+                        this.element.classList.add('swimming');
+                        this.moveTowardsTarget(deltaTime);
+                        if (this.target) {
+                            const distance = this.distanceTo(this.target.obj);
+                            if (this.target.type === 'food' && distance < 30) {
+                                this.eatFood(this.target.obj);
+                                this.element.classList.remove('swimming');
+                            } else if (this.target.type === 'fish' && distance < 40) {
+                                this.catchFish(this.target.obj);
+                                this.element.classList.remove('swimming');
+                            }
+                        }
+                        break;
+                    
+                    case 'socializing':
+                        this.element.classList.add('swimming');
+                        this.moveTowardsTarget(deltaTime);
+                        if (this.target && this.distanceTo(this.target.obj) < 50) {
+                            this.socialize(this.target.obj);
+                            this.element.classList.remove('swimming');
+                        }
+                        break;
+                    
+                    case 'resting':
+                        this.element.classList.remove('swimming');
+                        this.energy = Math.min(100, this.energy + deltaTime * 3);
+                        if (this.energy > 80) {
+                            this.state = 'idle';
+                            this.showThought('Feeling refreshed! ✨');
+                        }
+                        break;
+                    
+                    case 'exploring':
+                        this.element.classList.add('swimming');
+                        this.moveTowardsTarget(deltaTime);
+                        if (this.target && Math.abs(this.x - this.target.x) < 10 && Math.abs(this.y - this.target.y) < 10) {
+                            this.state = 'idle';
+                            this.target = null;
+                            this.element.classList.remove('swimming');
+                        }
+                        break;
+                    
+                    default:
+                        this.element.classList.remove('swimming');
+                        break;
+                }
+            }
+
+            moveTowardsTarget(deltaTime) {
+                if (!this.target) return;
+
+                const targetX = this.target.x !== undefined ? this.target.x : this.target.obj.x;
+                const targetY = this.target.y !== undefined ? this.target.y : this.target.obj.y;
+
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 5) {
+                    const moveSpeed = this.speed * deltaTime * 60;
+                    this.x += (dx / distance) * moveSpeed;
+                    this.y += (dy / distance) * moveSpeed;
+
+                    // Flip duck based on direction
+                    const duckBody = this.element.querySelector('.duck-body');
+                    if (dx < 0) {
+                        duckBody.style.transform = 'scaleX(-1)';
+                    } else {
+                        duckBody.style.transform = 'scaleX(1)';
+                    }
+                }
+            }
+
+            eatFood(food) {
+                this.hunger = Math.min(100, this.hunger + 35);
+                this.energy = Math.min(100, this.energy + 10);
+                this.showThought('Yummy shrimp! 😋');
+                logEvent(`Duck #${this.id} ate shrimp and feels satisfied`);
+                
+                removeFood(food);
+                this.target = null;
+                this.state = 'idle';
+            }
+
+            catchFish(fish) {
+                this.hunger = Math.min(100, this.hunger + 50);
+                this.energy = Math.min(100, this.energy + 15);
+                this.showThought('Caught a fish! 🎣');
+                logEvent(`Duck #${this.id} caught and ate fish #${fish.id}!`);
+                
+                removeFish(fish);
+                this.target = null;
+                this.state = 'idle';
+            }
+
+            socialize(otherDuck) {
+                this.social = Math.min(100, this.social + 15);
+                otherDuck.social = Math.min(100, otherDuck.social + 15);
+                
+                if (!this.friends.includes(otherDuck.id)) {
+                    this.friends.push(otherDuck.id);
+                }
+                
+                const interactions = [
+                    'Nice to meet you!',
+                    'Quack quack! 🗣️',
+                    'Great weather today!',
+                    'Let\'s be friends! 🤝'
+                ];
+                
+                this.showThought(interactions[Math.floor(Math.random() * interactions.length)]);
+                logEvent(`Duck #${this.id} and Duck #${otherDuck.id} are socializing`);
+                
+                this.target = null;
+                this.state = 'idle';
+            }
+
+            showThought(text) {
+                this.thinkingText = text;
+                this.thinkingTimer = 3000; // Show for 3 seconds
+                const bubble = this.element.querySelector('.duck-thinking');
+                bubble.textContent = text;
+                bubble.classList.add('show');
+            }
+
+            hideThought() {
+                const bubble = this.element.querySelector('.duck-thinking');
+                bubble.classList.remove('show');
+            }
+
+            updateVisuals() {
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+
+                // Update stat bars
+                const hungerBar = this.element.querySelector('.stat-hunger');
+                const energyBar = this.element.querySelector('.stat-energy');
+                const socialBar = this.element.querySelector('.stat-social');
+
+                if (hungerBar) hungerBar.style.width = this.hunger + '%';
+                if (energyBar) energyBar.style.width = this.energy + '%';
+                if (socialBar) socialBar.style.width = this.social + '%';
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Fish Class
+        class Fish {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.direction = Math.random() * Math.PI * 2;
+                
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const fish = document.createElement('div');
+                fish.className = 'fish fade-in';
+                fish.style.left = this.x + 'px';
+                fish.style.top = this.y + 'px';
+                fish.innerHTML = '🐟';
+                fish.addEventListener('click', () => this.onClick());
+                document.getElementById('game-container').appendChild(fish);
+                return fish;
+            }
+
+            onClick() {
+                logEvent(`Fish #${this.id} was caught by a duck!`);
+                const nearbyDuck = gameState.ducks.find(d => {
+                    const dist = Math.sqrt((d.x - this.x) ** 2 + (d.y - this.y) ** 2);
+                    return dist < 150;
+                });
+                
+                if (nearbyDuck) {
+                    nearbyDuck.hunger = Math.min(100, nearbyDuck.hunger + 50);
+                    nearbyDuck.showThought('Caught a fish! 🎣');
+                }
+                
+                removeFish(this);
+            }
+
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+
+                // Random swimming behavior
+                if (Math.random() < 0.02) {
+                    this.direction += (Math.random() - 0.5) * Math.PI / 4;
+                }
+
+                const moveSpeed = this.speed * deltaTime * 30;
+                this.x += Math.cos(this.direction) * moveSpeed;
+                this.y += Math.sin(this.direction) * moveSpeed;
+
+                // Bounds checking (keep in water)
+                const container = document.getElementById('game-container');
+                const oceanTop = container.clientHeight * 0.4;
+                
+                if (this.x < 0 || this.x > container.clientWidth - 50) {
+                    this.direction = Math.PI - this.direction;
+                }
+                if (this.y < oceanTop || this.y > container.clientHeight - 50) {
+                    this.direction = -this.direction;
+                }
+
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Food Class
+        class Food {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.lifetime = 30000; // 30 seconds
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const food = document.createElement('div');
+                food.className = 'food-item fade-in';
+                food.style.left = this.x + 'px';
+                food.style.top = this.y + 'px';
+                food.innerHTML = '🦐';
+                
+                // Make draggable
+                food.draggable = true;
+                food.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('foodId', this.id);
+                });
+                
+                document.getElementById('game-container').appendChild(food);
+                return food;
+            }
+
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                
+                this.lifetime -= deltaTime * 1000;
+                if (this.lifetime <= 0) {
+                    logEvent('Shrimp decayed naturally');
+                    removeFood(this);
+                }
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Game Functions
+        function addDuck() {
+            const container = document.getElementById('game-container');
+            const x = Math.random() * (container.clientWidth - 100);
+            // Keep ducks floating on the water surface (between 35% and 45% of screen height)
+            const waterSurfaceMin = container.clientHeight * 0.35;
+            const waterSurfaceMax = container.clientHeight * 0.45;
+            const y = waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin);
+            
+            const duck = new DuckAgent(gameState.nextDuckId++, x, y);
+            gameState.ducks.push(duck);
+            updateHUD();
+            logEvent(`New ${duck.personality} duck #${duck.id} joined the pond!`);
+        }
+
+        function addFish() {
+            const container = document.getElementById('game-container');
+            const oceanTop = container.clientHeight * 0.4;
+            const x = Math.random() * (container.clientWidth - 50);
+            const y = oceanTop + Math.random() * (container.clientHeight * 0.3);
+            
+            const fish = new Fish(gameState.nextFishId++, x, y);
+            gameState.fish.push(fish);
+            updateHUD();
+            logEvent(`Fish #${fish.id} swam into the pond`);
+        }
+
+        function addFood() {
+            const container = document.getElementById('game-container');
+            const x = Math.random() * (container.clientWidth - 50);
+            const y = Math.random() * (container.clientHeight * 0.5);
+            
+            const food = new Food(gameState.nextFoodId++, x, y);
+            gameState.food.push(food);
+            updateHUD();
+        }
+
+        function removeFood(food) {
+            const index = gameState.food.indexOf(food);
+            if (index > -1) {
+                gameState.food.splice(index, 1);
+                food.destroy();
+                updateHUD();
+            }
+        }
+
+        function removeFish(fish) {
+            const index = gameState.fish.indexOf(fish);
+            if (index > -1) {
+                gameState.fish.splice(index, 1);
+                fish.destroy();
+                updateHUD();
+            }
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            const btn = event.target;
+            btn.textContent = gameState.isPaused ? '▶️ Resume' : '⏸️ Pause';
+            logEvent(gameState.isPaused ? 'Game paused' : 'Game resumed');
+        }
+
+        function toggleLog() {
+            const log = document.getElementById('ecosystem-log');
+            log.classList.toggle('collapsed');
+        }
+
+        function updateHUD() {
+            document.getElementById('duck-count').textContent = gameState.ducks.length;
+            document.getElementById('fish-count').textContent = gameState.fish.length;
+            document.getElementById('food-count').textContent = gameState.food.length;
+        }
+
+        function logEvent(message) {
+            const logContent = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry fade-in';
+            
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<div class="log-time">${time}</div>${message}`;
+            
+            logContent.insertBefore(entry, logContent.firstChild);
+            
+            // Keep only last 20 entries
+            while (logContent.children.length > 20) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+
+        function toggleLog() {
+            const log = document.getElementById('ecosystem-log');
+            log.classList.toggle('collapsed');
+        }
+
+        // Game Loop
+        let lastTime = Date.now();
+        function gameLoop() {
+            const now = Date.now();
+            const deltaTime = (now - lastTime) / 1000;
+            lastTime = now;
+
+            if (!gameState.isPaused) {
+                gameState.time += deltaTime;
+                document.getElementById('time-elapsed').textContent = Math.floor(gameState.time) + 's';
+
+                // Update all entities
+                gameState.ducks.forEach(duck => duck.update(deltaTime));
+                gameState.fish.forEach(fish => fish.update(deltaTime));
+                gameState.food.forEach(food => food.update(deltaTime));
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Drag and drop for food placement
+        document.getElementById('game-container').addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.getElementById('game-container').addEventListener('drop', (e) => {
+            e.preventDefault();
+            const foodId = parseInt(e.dataTransfer.getData('foodId'));
+            const food = gameState.food.find(f => f.id === foodId);
+            
+            if (food) {
+                food.x = e.clientX - 20;
+                food.y = e.clientY - 20;
+                food.element.style.left = food.x + 'px';
+                food.element.style.top = food.y + 'px';
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logEvent('🌊 Welcome to Duck Pond Ecosystem!');
+            logEvent('Click buttons to add ducks, fish, and shrimp');
+            logEvent('Watch as ducks make autonomous decisions');
+            logEvent('Ducks will swim and hunt for food!');
+            
+            // Add initial entities
+            addDuck();
+            addDuck();
+            addFish();
+            addFood();
+            addFood();
+            
+            gameLoop();
+        });
+    </script>
+</body>
+</html>
