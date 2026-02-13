@@ -26,6 +26,9 @@
             --sky-gradient-1: #ffeaa7;
             --sky-gradient-2: #fab1a0;
             --sky-gradient-3: #fd79a8;
+            --night-sky-1: #0f2027;
+            --night-sky-2: #203a43;
+            --night-sky-3: #2c5364;
         }
 
         body {
@@ -33,9 +36,14 @@
             background: linear-gradient(180deg, var(--sky-gradient-1) 0%, var(--sky-gradient-2) 40%, var(--sky-gradient-3) 100%);
             overflow: hidden;
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
             position: relative;
             touch-action: none;
+            transition: background 2s ease;
+        }
+
+        body.night {
+            background: linear-gradient(180deg, var(--night-sky-1) 0%, var(--night-sky-2) 40%, var(--night-sky-3) 100%);
         }
 
         #game-container {
@@ -45,6 +53,73 @@
             overflow: hidden;
         }
 
+        .celestial-body {
+            position: absolute;
+            border-radius: 50%;
+            transition: opacity 2s ease, transform 2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sun {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #fff9e6 0%, #ffd700 50%, #ff8c00 100%);
+            box-shadow: 0 0 60px #ffd700;
+            top: 10%;
+            right: 15%;
+        }
+
+        .moon {
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #f0f0f0 0%, #d0d0d0 100%);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+            top: 10%;
+            right: 15%;
+            opacity: 0;
+        }
+
+        body.night .sun {
+            opacity: 0;
+            transform: translateY(100px);
+        }
+
+        body.night .moon {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            opacity: 0;
+            transition: opacity 2s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.night .stars {
+            opacity: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
         .ocean {
             position: absolute;
             bottom: 0;
@@ -52,6 +127,11 @@
             height: 60%;
             background: linear-gradient(180deg, var(--ocean-light) 0%, var(--ocean-mid) 40%, var(--ocean-deep) 100%);
             border-top: 4px solid var(--wave-foam);
+            transition: background 2s ease;
+        }
+
+        body.night .ocean {
+            background: linear-gradient(180deg, #1a3a52 0%, #0d1f2d 40%, #050d14 100%);
         }
 
         .wave {
@@ -79,6 +159,49 @@
         @keyframes waveMove {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
+        }
+
+        .island {
+            position: absolute;
+            z-index: 4;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .island:hover {
+            transform: scale(1.05);
+        }
+
+        .island-base {
+            font-size: 120px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .island-grass {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .grass-tuft {
+            font-size: 24px;
+            animation: grassSway 3s ease-in-out infinite;
+        }
+
+        .grass-tuft:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .grass-tuft:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes grassSway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
         }
 
         .duck {
@@ -128,6 +251,14 @@
             .egg {
                 font-size: 28px;
             }
+
+            .island-base {
+                font-size: 90px;
+            }
+
+            .grass-tuft {
+                font-size: 18px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -153,6 +284,14 @@
 
             .egg {
                 font-size: 24px;
+            }
+
+            .island-base {
+                font-size: 70px;
+            }
+
+            .grass-tuft {
+                font-size: 16px;
             }
         }
 
@@ -358,7 +497,6 @@
             100% { transform: scale(2); opacity: 0; }
         }
 
-        /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .log-header {
                 padding: 10px 15px;
@@ -459,7 +597,6 @@
             opacity: 1;
         }
 
-        /* On mobile, show stats on tap */
         @media (max-width: 768px) {
             .duck-stats {
                 font-size: 9px;
@@ -682,7 +819,6 @@
                 flex: 0 1 auto;
             }
 
-            /* Make buttons fit better on small screens */
             .btn:nth-child(n+4) {
                 flex: 1 1 30%;
             }
@@ -813,6 +949,11 @@
 </head>
 <body>
     <div id="game-container">
+        <!-- Celestial bodies -->
+        <div class="celestial-body sun"></div>
+        <div class="celestial-body moon"></div>
+        <div class="stars" id="stars"></div>
+
         <div class="ocean">
             <div class="wave"></div>
             <div class="wave"></div>
@@ -829,6 +970,10 @@
                 <span class="hud-value" id="egg-count">0</span>
             </div>
             <div class="hud-stat">
+                <span>🏝️ Islands:</span>
+                <span class="hud-value" id="island-count">0</span>
+            </div>
+            <div class="hud-stat">
                 <span>🐟 Fish:</span>
                 <span class="hud-value" id="fish-count">0</span>
             </div>
@@ -839,6 +984,10 @@
             <div class="hud-stat">
                 <span>⏱️ Time:</span>
                 <span class="hud-value" id="time-elapsed">0s</span>
+            </div>
+            <div class="hud-stat">
+                <span id="time-of-day-icon">☀️</span>
+                <span class="hud-value" id="time-of-day">Day</span>
             </div>
             <div class="hud-divider"></div>
             <div class="hud-quality">
@@ -854,6 +1003,7 @@
 
         <div class="controls">
             <button class="btn" onclick="addDuck()">➕ Add Duck</button>
+            <button class="btn" onclick="addIsland()">🏝️ Add Island</button>
             <button class="btn" onclick="addFish()">🐟 Add Fish</button>
             <button class="btn" onclick="addFood()">🦐 Add Shrimp</button>
             <button class="btn" onclick="addOctopus()">🐙 Add Octopus</button>
@@ -881,6 +1031,7 @@
             seagrass: [],
             octopi: [],
             elixirs: [],
+            islands: [],
             isPaused: false,
             time: 0,
             nextDuckId: 1,
@@ -891,8 +1042,51 @@
             nextSeagrassId: 1,
             nextOctopusId: 1,
             nextElixirId: 1,
-            waterPollution: 0 // 0-100, increases with bad algae
+            nextIslandId: 1,
+            waterPollution: 0,
+            isNight: false,
+            dayNightCycle: 0,
+            dayNightDuration: 60 // 60 seconds per day/night cycle
         };
+
+        // Island Class
+        class Island {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const island = document.createElement('div');
+                island.className = 'island fade-in';
+                island.style.left = this.x + 'px';
+                island.style.top = this.y + 'px';
+                
+                island.innerHTML = `
+                    <div class="island-base">🏝️</div>
+                    <div class="island-grass">
+                        <span class="grass-tuft">🌿</span>
+                        <span class="grass-tuft">🌿</span>
+                        <span class="grass-tuft">🌿</span>
+                    </div>
+                `;
+                
+                document.getElementById('game-container').appendChild(island);
+                return island;
+            }
+
+            isPointOnIsland(x, y) {
+                const dx = x - (this.x + 60); // Center of island
+                const dy = y - (this.y + 60);
+                return Math.sqrt(dx * dx + dy * dy) < 50; // Island radius
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
 
         // Duck Agent Class
         class DuckAgent {
@@ -917,8 +1111,9 @@
                 this.breedingCooldown = 0;
                 this.gender = Math.random() < 0.5 ? 'M' : 'F';
                 this.color = parentColor || this.generateColor();
-                this.mealsEaten = 0; // Track meals for fertility
-                this.fertility = 0; // Fertility increases with eating
+                this.mealsEaten = 0;
+                this.fertility = 0;
+                this.onIsland = false;
                 
                 this.element = this.createElement();
                 this.updateVisuals();
@@ -949,7 +1144,6 @@
                 duck.style.left = this.x + 'px';
                 duck.style.top = this.y + 'px';
                 
-                // Determine if duckling (age < 10)
                 const isDuckling = this.age < 10;
                 const duckEmoji = isDuckling ? '🐥' : this.color.emoji;
                 const size = isDuckling ? '36px' : '48px';
@@ -992,6 +1186,18 @@
                 
                 this.lastDecisionTime = now;
 
+                // Check if ready to lay eggs on island
+                if (this.canBreed && this.breedingCooldown <= 0 && this.hunger > 60 && this.energy > 60 && this.fertility > 70) {
+                    const nearestIsland = this.findNearestIsland();
+                    if (nearestIsland && !this.onIsland) {
+                        this.target = { type: 'island', obj: nearestIsland };
+                        this.state = 'seeking-island';
+                        this.showThought('Going to lay eggs! 🏝️');
+                        logEvent(`Duck #${this.id} is heading to an island to lay eggs`);
+                        return;
+                    }
+                }
+
                 // Check if duck can breed
                 if (this.canBreed && this.breedingCooldown <= 0 && this.hunger > 50 && this.energy > 50) {
                     const mate = this.findMate();
@@ -1004,7 +1210,6 @@
                 const urgentNeed = this.getUrgentNeed();
                 
                 if (urgentNeed === 'hunger') {
-                    // Decide between shrimp and fish
                     const nearestFood = this.findNearest(gameState.food);
                     const nearestFish = this.findNearest(gameState.fish);
                     
@@ -1029,6 +1234,11 @@
                 } else {
                     this.explore();
                 }
+            }
+
+            findNearestIsland() {
+                if (gameState.islands.length === 0) return null;
+                return this.findNearest(gameState.islands);
             }
 
             findMate() {
@@ -1121,12 +1331,10 @@
                     
                     let targetY;
                     if (isDuckling) {
-                        // Ducklings stay on water surface
                         const waterSurfaceMin = container.clientHeight * 0.35;
                         const waterSurfaceMax = container.clientHeight * 0.50;
                         targetY = waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin);
                     } else {
-                        // Adult ducks can fly! (anywhere from 10% to 50% of screen)
                         const skyMin = container.clientHeight * 0.10;
                         const waterMax = container.clientHeight * 0.50;
                         targetY = skyMin + Math.random() * (waterMax - skyMin);
@@ -1161,25 +1369,24 @@
 
             distanceTo(obj) {
                 if (!obj) return Infinity;
-                const dx = obj.x - this.x;
-                const dy = obj.y - this.y;
+                const objX = obj.x !== undefined ? obj.x : (obj.x + 60);
+                const objY = obj.y !== undefined ? obj.y : (obj.y + 60);
+                const dx = objX - this.x;
+                const dy = objY - this.y;
                 return Math.sqrt(dx * dx + dy * dy);
             }
 
             update(deltaTime) {
                 if (gameState.isPaused) return;
 
-                // Age the duck
                 this.age += deltaTime;
                 
-                // Can breed after 10 seconds (age 10)
                 if (this.age >= 10 && !this.canBreed) {
                     this.canBreed = true;
                     this.showThought('I\'m mature now! 🎂');
                     logEvent(`Duck #${this.id} can now breed!`);
                 }
 
-                // Decrease breeding cooldown
                 if (this.breedingCooldown > 0) {
                     this.breedingCooldown -= deltaTime;
                 }
@@ -1215,7 +1422,7 @@
                     
                     case 'seeking-fish':
                         this.isSwimming = true;
-                        this.moveTowardsTarget(deltaTime * 1.3); // Swim faster when hunting
+                        this.moveTowardsTarget(deltaTime * 1.3);
                         if (this.target && this.distanceTo(this.target.obj) < 40) {
                             this.catchFish(this.target.obj);
                         }
@@ -1237,6 +1444,14 @@
                         }
                         break;
                     
+                    case 'seeking-island':
+                        this.isSwimming = true;
+                        this.moveTowardsTarget(deltaTime);
+                        if (this.target && this.distanceTo(this.target.obj) < 60) {
+                            this.layEggsOnIsland(this.target.obj);
+                        }
+                        break;
+                    
                     case 'resting':
                         this.energy = Math.min(100, this.energy + deltaTime * 3);
                         if (this.energy > 80) {
@@ -1255,7 +1470,6 @@
                         break;
                 }
 
-                // Update swimming animation class
                 if (this.isSwimming !== wasSwimming) {
                     if (this.isSwimming) {
                         this.element.classList.add('swimming');
@@ -1264,14 +1478,12 @@
                     }
                 }
 
-                // Update breeding animation
                 if (this.state === 'breeding') {
                     this.element.classList.add('breeding');
                 } else {
                     this.element.classList.remove('breeding');
                 }
 
-                // Update flying animation for adult ducks in the sky
                 const container = document.getElementById('game-container');
                 const waterSurface = container.clientHeight * 0.40;
                 const isInSky = this.y < waterSurface;
@@ -1288,8 +1500,8 @@
             moveTowardsTarget(deltaTime) {
                 if (!this.target) return;
 
-                const targetX = this.target.x !== undefined ? this.target.x : this.target.obj.x;
-                const targetY = this.target.y !== undefined ? this.target.y : this.target.obj.y;
+                const targetX = this.target.x !== undefined ? this.target.x : (this.target.obj.x + 60);
+                const targetY = this.target.y !== undefined ? this.target.y : (this.target.obj.y + 60);
 
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
@@ -1333,7 +1545,7 @@
                 this.hunger = Math.min(100, this.hunger + 50);
                 this.energy = Math.min(100, this.energy + 15);
                 this.mealsEaten++;
-                this.fertility = Math.min(100, this.fertility + 25); // Fish gives more fertility!
+                this.fertility = Math.min(100, this.fertility + 25);
                 
                 this.showThought('Caught a fish! 🎣');
                 logEvent(`Duck #${this.id} caught and ate a fish (${this.mealsEaten} meals total)`);
@@ -1379,40 +1591,32 @@
                     return;
                 }
 
-                // Check for opposite genders - silently fail if same gender
                 if (this.gender === mate.gender) {
                     this.state = 'idle';
                     this.target = null;
                     return;
                 }
 
-                // Find who is female
                 const female = this.gender === 'F' ? this : mate;
                 const male = this.gender === 'M' ? this : mate;
 
-                // Add laying egg animation to female
                 female.element.classList.add('laying-egg');
                 setTimeout(() => female.element.classList.remove('laying-egg'), 2000);
 
-                // Spawn heart particles
                 this.spawnHearts(this.x, this.y);
                 this.spawnHearts(mate.x, mate.y);
 
-                // Both ducks have cooldown
                 this.breedingCooldown = 30;
                 mate.breedingCooldown = 30;
 
                 this.showThought('💕 Love is in the air! 💕');
                 mate.showThought('💕 Love is in the air! 💕');
 
-                // Create egg(s) - more fertile ducks can lay multiple eggs!
                 const eggX = (this.x + mate.x) / 2;
                 const eggY = (this.y + mate.y) / 2;
                 
-                // Randomly inherit color from parents
                 const parentColor = Math.random() < 0.5 ? this.color : mate.color;
                 
-                // Number of eggs based on fertility
                 const avgFertility = (this.fertility + mate.fertility) / 2;
                 let numEggs = 1;
                 if (avgFertility > 75) numEggs = 3;
@@ -1426,7 +1630,6 @@
                     }, i * 300);
                 }
                 
-                // Decrease fertility after breeding
                 this.fertility = Math.max(0, this.fertility - 30);
                 mate.fertility = Math.max(0, mate.fertility - 30);
 
@@ -1434,6 +1637,34 @@
                 
                 this.target = null;
                 this.state = 'idle';
+            }
+
+            layEggsOnIsland(island) {
+                this.onIsland = true;
+                this.element.classList.add('laying-egg');
+                setTimeout(() => this.element.classList.remove('laying-egg'), 2000);
+
+                const numEggs = Math.floor(this.fertility / 25) + 1; // 1-4 eggs based on fertility
+
+                for (let i = 0; i < numEggs; i++) {
+                    setTimeout(() => {
+                        const offsetX = (Math.random() - 0.5) * 60;
+                        const offsetY = (Math.random() - 0.5) * 40;
+                        createEgg(island.x + 60 + offsetX, island.y + 60 + offsetY, this.color);
+                    }, i * 400);
+                }
+
+                this.breedingCooldown = 40;
+                this.fertility = Math.max(0, this.fertility - 50);
+                
+                this.showThought(`Laid ${numEggs} eggs on the island! 🥚🏝️`);
+                logEvent(`Duck #${this.id} laid ${numEggs} egg(s) on Island #${island.id}!`);
+
+                setTimeout(() => {
+                    this.onIsland = false;
+                    this.state = 'idle';
+                    this.target = null;
+                }, 3000);
             }
 
             spawnHearts(x, y) {
@@ -1468,7 +1699,6 @@
                 this.element.style.left = this.x + 'px';
                 this.element.style.top = this.y + 'px';
 
-                // Update duck appearance based on age
                 const duckBody = this.element.querySelector('.duck-body');
                 const isDuckling = this.age < 10;
                 if (duckBody) {
@@ -1528,7 +1758,6 @@
                     this.direction += (Math.random() - 0.5) * Math.PI / 4;
                 }
 
-                // Look for food: algae or shrimp
                 if (Math.random() < 0.05) {
                     const nearbyAlgae = gameState.algae.find(algae => {
                         const dist = Math.sqrt((algae.x - this.x) ** 2 + (algae.y - this.y) ** 2);
@@ -1567,7 +1796,6 @@
                     }
                 }
 
-                // Reproduce when well-fed
                 if (this.hunger > 70 && this.reproductionCooldown <= 0) {
                     const nearbyMate = gameState.fish.find(f => {
                         if (f === this || f.reproductionCooldown > 0) return false;
@@ -1656,7 +1884,6 @@
                 this.hunger = Math.max(0, this.hunger - deltaTime * 0.5);
                 this.reproductionCooldown = Math.max(0, this.reproductionCooldown - deltaTime);
                 
-                // Look for algae to eat
                 if (Math.random() < 0.03) {
                     const nearbyAlgae = gameState.algae.find(algae => {
                         const dist = Math.sqrt((algae.x - this.x) ** 2 + (algae.y - this.y) ** 2);
@@ -1665,12 +1892,11 @@
                     
                     if (nearbyAlgae) {
                         this.hunger = Math.min(100, this.hunger + 25);
-                        this.lifetime += 5000; // Extend life
+                        this.lifetime += 5000;
                         removeAlgae(nearbyAlgae);
                     }
                 }
 
-                // Reproduce when well-fed
                 if (this.hunger > 60 && this.reproductionCooldown <= 0) {
                     const nearbyMate = gameState.food.find(f => {
                         if (f === this || f.reproductionCooldown > 0) return false;
@@ -1710,7 +1936,7 @@
                 this.x = x;
                 this.y = y;
                 this.parentColor = parentColor;
-                this.hatchTime = 15; // 15 seconds to hatch
+                this.hatchTime = 15;
                 this.element = this.createElement();
             }
 
@@ -1744,7 +1970,6 @@
                 this.element.classList.add('hatching');
                 
                 setTimeout(() => {
-                    // Create new duck at egg position
                     const newDuck = new DuckAgent(gameState.nextDuckId++, this.x, this.y, this.parentColor);
                     gameState.ducks.push(newDuck);
                     
@@ -1785,10 +2010,10 @@
                 algae.style.top = this.y + 'px';
                 
                 if (this.type === 'toxic') {
-                    algae.innerHTML = '🔴'; // Red toxic algae bloom
+                    algae.innerHTML = '🔴';
                     algae.style.opacity = '0.7';
                 } else {
-                    algae.innerHTML = '🟢'; // Green healthy algae
+                    algae.innerHTML = '🟢';
                     algae.style.opacity = '0.6';
                 }
                 
@@ -1877,12 +2102,10 @@
                     this.tickleCooldown -= deltaTime;
                 }
 
-                // Random movement
                 if (Math.random() < 0.02) {
                     this.direction += (Math.random() - 0.5) * Math.PI / 4;
                 }
 
-                // Look for nearby elixirs to open
                 const nearbyElixir = gameState.elixirs.find(elixir => {
                     const dist = Math.sqrt((elixir.x - this.x) ** 2 + (elixir.y - this.y) ** 2);
                     return dist < 50;
@@ -1899,7 +2122,6 @@
                     }
                 }
 
-                // Look for ducks to tickle
                 if (this.tickleCooldown <= 0) {
                     const nearbyDuck = gameState.ducks.find(duck => {
                         const dist = Math.sqrt((duck.x - this.x) ** 2 + (duck.y - this.y) ** 2);
@@ -1934,7 +2156,6 @@
                 duck.showThought('Hehe! That tickles! 😆');
                 duck.social = Math.min(100, duck.social + 10);
                 
-                // Spawn tickle particles
                 for (let i = 0; i < 3; i++) {
                     setTimeout(() => {
                         const tickle = document.createElement('div');
@@ -1953,14 +2174,11 @@
             openElixir(elixir) {
                 logEvent(`Octopus #${this.id} opened an elixir jar! 🐙🫙`);
                 
-                // Remove all toxic algae
                 const toxicAlgae = gameState.algae.filter(a => a.type === 'toxic');
                 toxicAlgae.forEach(algae => removeAlgae(algae));
                 
-                // Reduce pollution significantly
                 gameState.waterPollution = Math.max(0, gameState.waterPollution - 40);
                 
-                // Add some seagrass
                 for (let i = 0; i < 3; i++) {
                     setTimeout(() => addSeagrass(), i * 200);
                 }
@@ -1987,7 +2205,7 @@
                 elixir.className = 'elixir fade-in';
                 elixir.style.left = this.x + 'px';
                 elixir.style.top = this.y + 'px';
-                elixir.innerHTML = '🫙'; // Jar emoji
+                elixir.innerHTML = '🫙';
                 elixir.title = 'Octopus can open this to clean the water!';
                 
                 elixir.draggable = true;
@@ -2001,7 +2219,6 @@
             }
 
             update(deltaTime) {
-                // Elixirs don't decay
             }
 
             destroy() {
@@ -2021,6 +2238,18 @@
             gameState.ducks.push(duck);
             updateHUD();
             logEvent(`New ${duck.personality} duck #${duck.id} joined the pond!`);
+        }
+
+        function addIsland() {
+            const container = document.getElementById('game-container');
+            const oceanTop = container.clientHeight * 0.4;
+            const x = Math.random() * (container.clientWidth - 150);
+            const y = oceanTop + Math.random() * (container.clientHeight * 0.25);
+            
+            const island = new Island(gameState.nextIslandId++, x, y);
+            gameState.islands.push(island);
+            updateHUD();
+            logEvent(`Island #${island.id} appeared! 🏝️`);
         }
 
         function addFish() {
@@ -2165,8 +2394,37 @@
         function updateHUD() {
             document.getElementById('duck-count').textContent = gameState.ducks.length;
             document.getElementById('egg-count').textContent = gameState.eggs.length;
+            document.getElementById('island-count').textContent = gameState.islands.length;
             document.getElementById('fish-count').textContent = gameState.fish.length;
             document.getElementById('food-count').textContent = gameState.food.length;
+        }
+
+        function updateDayNight() {
+            const body = document.body;
+            const icon = document.getElementById('time-of-day-icon');
+            const text = document.getElementById('time-of-day');
+            
+            if (gameState.isNight) {
+                body.classList.add('night');
+                icon.textContent = '🌙';
+                text.textContent = 'Night';
+            } else {
+                body.classList.remove('night');
+                icon.textContent = '☀️';
+                text.textContent = 'Day';
+            }
+        }
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
         }
 
         function logEvent(message) {
@@ -2198,7 +2456,15 @@
                 gameState.time += deltaTime;
                 document.getElementById('time-elapsed').textContent = Math.floor(gameState.time) + 's';
 
-                // Update all entities
+                // Day/Night cycle
+                gameState.dayNightCycle += deltaTime;
+                if (gameState.dayNightCycle >= gameState.dayNightDuration) {
+                    gameState.dayNightCycle = 0;
+                    gameState.isNight = !gameState.isNight;
+                    updateDayNight();
+                    logEvent(gameState.isNight ? '🌙 Night has fallen' : '☀️ Day has begun');
+                }
+
                 gameState.ducks.forEach(duck => duck.update(deltaTime));
                 gameState.fish.forEach(fish => fish.update(deltaTime));
                 gameState.food.forEach(food => food.update(deltaTime));
@@ -2208,7 +2474,6 @@
                 gameState.octopi.forEach(octopus => octopus.update(deltaTime));
                 gameState.elixirs.forEach(elixir => elixir.update(deltaTime));
 
-                // Spawn algae periodically (more when there are many creatures)
                 algaeSpawnTimer += deltaTime;
                 const spawnInterval = Math.max(3, 10 - (gameState.ducks.length + gameState.fish.length) * 0.3);
                 
@@ -2217,14 +2482,12 @@
                     addAlgae();
                 }
 
-                // Spawn seagrass occasionally
                 seagrassSpawnTimer += deltaTime;
                 if (seagrassSpawnTimer >= 15 && gameState.seagrass.length < 8) {
                     seagrassSpawnTimer = 0;
                     addSeagrass();
                 }
 
-                // Update pollution indicator
                 updatePollutionIndicator();
             }
 
@@ -2238,7 +2501,6 @@
             pollutionFill.style.width = gameState.waterPollution + '%';
             pollutionValue.textContent = Math.floor(gameState.waterPollution);
 
-            // Update color based on pollution level
             pollutionFill.className = 'pollution-fill';
             if (gameState.waterPollution < 30) {
                 pollutionFill.classList.add('pollution-low');
@@ -2277,11 +2539,10 @@
             }
         });
 
-        // Touch support for mobile
+        // Touch support
         let touchedElement = null;
         let touchOffset = { x: 0, y: 0 };
 
-        // Visual touch feedback
         function createTouchIndicator(x, y) {
             const indicator = document.createElement('div');
             indicator.className = 'touch-indicator';
@@ -2315,9 +2576,7 @@
                 touchedElement.style.left = x + 'px';
                 touchedElement.style.top = y + 'px';
                 
-                // Update the actual object position
                 if (touchedElement.classList.contains('food-item')) {
-                    const foodId = parseInt(touchedElement.dataset.foodId || -1);
                     const food = gameState.food.find(f => f.element === touchedElement);
                     if (food) {
                         food.x = x;
@@ -2341,21 +2600,24 @@
 
         // Initialize
         window.addEventListener('load', () => {
+            createStars();
+            
             logEvent('🌊 Welcome to Sea of Ducks Ecosystem!');
+            logEvent('🏝️ Islands appear - ducks lay eggs there!');
             logEvent('🦆 Ducks hunt and breed based on nutrition');
             logEvent('🐟 Fish and 🦐 shrimp eat algae and reproduce');
             logEvent('🔴 Red algae pollutes water when overpopulated');
             logEvent('🐙 Octopi tickle ducks and open elixir jars!');
-            logEvent('🫙 Elixir jars remove toxic algae and restore balance');
+            logEvent('🫙 Elixir jars remove toxic algae');
+            logEvent('☀️🌙 Day and night cycle every 60 seconds');
             
-            // Initial creatures
             addDuck();
             addDuck();
+            addIsland();
             addFish();
             addFood();
             addFood();
             
-            // Initial plants
             for (let i = 0; i < 5; i++) {
                 addSeagrass();
             }
