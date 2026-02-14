@@ -173,7 +173,6 @@
         }
 
         .island-base {
-            font-size: 120px;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
@@ -202,6 +201,168 @@
         @keyframes grassSway {
             0%, 100% { transform: rotate(-3deg); }
             50% { transform: rotate(3deg); }
+        }
+
+        .coral-reef {
+            position: absolute;
+            font-size: 40px;
+            z-index: 3;
+            animation: coralSway 5s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        @keyframes coralSway {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        /* CSS Kelp */
+        .kelp {
+            position: absolute;
+            z-index: 3;
+            cursor: pointer;
+            width: 12px;
+            height: 80px;
+            transform-origin: bottom center;
+            animation: kelpSway 4s ease-in-out infinite;
+        }
+
+        .kelp-strand {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, 
+                #2d5016 0%, 
+                #3a6b1f 30%,
+                #4a8527 60%,
+                #5a9f2f 100%
+            );
+            border-radius: 50% 50% 0 0;
+            box-shadow: 
+                inset -2px 0 4px rgba(0,0,0,0.3),
+                2px 0 4px rgba(0,0,0,0.2);
+        }
+
+        .kelp-bulb {
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            background: radial-gradient(ellipse, #6bb042, #4a8527);
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .kelp-bulb:nth-child(2) { top: 20%; }
+        .kelp-bulb:nth-child(3) { top: 45%; }
+        .kelp-bulb:nth-child(4) { top: 70%; }
+
+        @keyframes kelpSway {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+
+        @media (max-width: 768px) {
+            .kelp {
+                width: 10px;
+                height: 65px;
+            }
+            .kelp-bulb {
+                width: 6px;
+                height: 9px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kelp {
+                width: 8px;
+                height: 50px;
+            }
+            .kelp-bulb {
+                width: 5px;
+                height: 7px;
+            }
+        }
+
+        /* CSS Seagrass */
+        .seagrass {
+            position: absolute;
+            z-index: 2;
+            width: 8px;
+            height: 50px;
+            transform-origin: bottom center;
+            animation: seagrassSway 4s ease-in-out infinite;
+        }
+
+        .seagrass-blade {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top,
+                #1a4d2e 0%,
+                #27613d 40%,
+                #34754c 70%,
+                #41895b 100%
+            );
+            border-radius: 50% 50% 0 0;
+            box-shadow: 
+                inset -1px 0 2px rgba(0,0,0,0.3),
+                1px 0 2px rgba(0,0,0,0.2);
+        }
+
+        .seagrass-blade:nth-child(1) {
+            left: -4px;
+            height: 100%;
+            opacity: 0.9;
+        }
+
+        .seagrass-blade:nth-child(2) {
+            left: 0;
+            height: 85%;
+            opacity: 1;
+        }
+
+        .seagrass-blade:nth-child(3) {
+            left: 4px;
+            height: 95%;
+            opacity: 0.85;
+        }
+
+        @keyframes seagrassSway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @media (max-width: 768px) {
+            .seagrass {
+                width: 6px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .seagrass {
+                width: 5px;
+                height: 32px;
+            }
+        }
+
+        .sea-urchin {
+            position: absolute;
+            font-size: 28px;
+            z-index: 5;
+            cursor: pointer;
+            animation: urchinPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes urchinPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .duck {
@@ -252,12 +413,16 @@
                 font-size: 28px;
             }
 
-            .island-base {
-                font-size: 90px;
-            }
-
             .grass-tuft {
                 font-size: 18px;
+            }
+
+            .coral-reef {
+                font-size: 32px;
+            }
+
+            .sea-urchin {
+                font-size: 22px;
             }
         }
 
@@ -286,12 +451,16 @@
                 font-size: 24px;
             }
 
-            .island-base {
-                font-size: 70px;
-            }
-
             .grass-tuft {
                 font-size: 16px;
+            }
+
+            .coral-reef {
+                font-size: 26px;
+            }
+
+            .sea-urchin {
+                font-size: 18px;
             }
         }
 
@@ -395,23 +564,29 @@
             font-size: 24px;
             z-index: 3;
             animation: algaeGrow 3s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        .algae:hover::after {
+            content: attr(data-type);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            margin-bottom: 5px;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 1000;
         }
 
         @keyframes algaeGrow {
             0%, 100% { transform: scale(1); opacity: 0.8; }
             50% { transform: scale(1.1); opacity: 1; }
-        }
-
-        .seagrass {
-            position: absolute;
-            font-size: 28px;
-            z-index: 2;
-            animation: seagrassSway 4s ease-in-out infinite;
-        }
-
-        @keyframes seagrassSway {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
         }
 
         .octopus {
@@ -497,27 +672,6 @@
             100% { transform: scale(2); opacity: 0; }
         }
 
-        @media (max-width: 768px) {
-            .log-header {
-                padding: 10px 15px;
-            }
-
-            .log-content {
-                padding: 0 15px 10px 15px;
-                max-height: 250px;
-            }
-
-            .log-entry {
-                margin: 6px 0;
-                padding: 6px;
-                font-size: 10px;
-            }
-
-            .log-time {
-                font-size: 9px;
-            }
-        }
-
         .duck-ripple {
             position: absolute;
             bottom: -5px;
@@ -554,7 +708,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
             z-index: 100;
         }
 
@@ -982,6 +1136,10 @@
                 <span class="hud-value" id="food-count">0</span>
             </div>
             <div class="hud-stat">
+                <span>🦔 Urchins:</span>
+                <span class="hud-value" id="urchin-count">0</span>
+            </div>
+            <div class="hud-stat">
                 <span>⏱️ Time:</span>
                 <span class="hud-value" id="time-elapsed">0s</span>
             </div>
@@ -1003,7 +1161,6 @@
 
         <div class="controls">
             <button class="btn" onclick="addDuck()">➕ Add Duck</button>
-            <button class="btn" onclick="addIsland()">🏝️ Add Island</button>
             <button class="btn" onclick="addFish()">🐟 Add Fish</button>
             <button class="btn" onclick="addFood()">🦐 Add Shrimp</button>
             <button class="btn" onclick="addOctopus()">🐙 Add Octopus</button>
@@ -1032,6 +1189,9 @@
             octopi: [],
             elixirs: [],
             islands: [],
+            coralReefs: [],
+            kelp: [],
+            seaUrchins: [],
             isPaused: false,
             time: 0,
             nextDuckId: 1,
@@ -1043,18 +1203,22 @@
             nextOctopusId: 1,
             nextElixirId: 1,
             nextIslandId: 1,
+            nextCoralId: 1,
+            nextKelpId: 1,
+            nextUrchinId: 1,
             waterPollution: 0,
             isNight: false,
             dayNightCycle: 0,
-            dayNightDuration: 60 // 60 seconds per day/night cycle
+            dayNightDuration: 60
         };
 
         // Island Class
         class Island {
-            constructor(id, x, y) {
+            constructor(id, x, y, size) {
                 this.id = id;
                 this.x = x;
                 this.y = y;
+                this.size = size;
                 this.element = this.createElement();
             }
 
@@ -1064,12 +1228,34 @@
                 island.style.left = this.x + 'px';
                 island.style.top = this.y + 'px';
                 
+                let fontSize, grassCount, grassSize;
+                switch(this.size) {
+                    case 'small':
+                        fontSize = 60;
+                        grassCount = 2;
+                        grassSize = 18;
+                        break;
+                    case 'medium':
+                        fontSize = 90;
+                        grassCount = 3;
+                        grassSize = 22;
+                        break;
+                    case 'large':
+                        fontSize = 120;
+                        grassCount = 4;
+                        grassSize = 26;
+                        break;
+                }
+                
+                let grassHTML = '';
+                for (let i = 0; i < grassCount; i++) {
+                    grassHTML += `<span class="grass-tuft" style="font-size: ${grassSize}px;">🌿</span>`;
+                }
+                
                 island.innerHTML = `
-                    <div class="island-base">🏝️</div>
+                    <div class="island-base" style="font-size: ${fontSize}px;">🏝️</div>
                     <div class="island-grass">
-                        <span class="grass-tuft">🌿</span>
-                        <span class="grass-tuft">🌿</span>
-                        <span class="grass-tuft">🌿</span>
+                        ${grassHTML}
                     </div>
                 `;
                 
@@ -1078,9 +1264,179 @@
             }
 
             isPointOnIsland(x, y) {
-                const dx = x - (this.x + 60); // Center of island
-                const dy = y - (this.y + 60);
-                return Math.sqrt(dx * dx + dy * dy) < 50; // Island radius
+                const centerOffset = this.size === 'small' ? 30 : (this.size === 'medium' ? 45 : 60);
+                const radius = this.size === 'small' ? 25 : (this.size === 'medium' ? 40 : 50);
+                const dx = x - (this.x + centerOffset);
+                const dy = y - (this.y + centerOffset);
+                return Math.sqrt(dx * dx + dy * dy) < radius;
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Coral Reef Class
+        class CoralReef {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const coral = document.createElement('div');
+                coral.className = 'coral-reef fade-in';
+                coral.style.left = this.x + 'px';
+                coral.style.top = this.y + 'px';
+                coral.innerHTML = '🪸';
+                document.getElementById('game-container').appendChild(coral);
+                return coral;
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Kelp Class (CSS-based)
+        class Kelp {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const kelp = document.createElement('div');
+                kelp.className = 'kelp fade-in';
+                kelp.style.left = this.x + 'px';
+                kelp.style.bottom = '0px';
+                kelp.innerHTML = `
+                    <div class="kelp-strand"></div>
+                    <div class="kelp-bulb"></div>
+                    <div class="kelp-bulb"></div>
+                    <div class="kelp-bulb"></div>
+                `;
+                document.getElementById('game-container').appendChild(kelp);
+                return kelp;
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Seagrass Class (CSS-based)
+        class Seagrass {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const grass = document.createElement('div');
+                grass.className = 'seagrass fade-in';
+                grass.style.left = this.x + 'px';
+                grass.style.bottom = '0px';
+                grass.innerHTML = `
+                    <div class="seagrass-blade"></div>
+                    <div class="seagrass-blade"></div>
+                    <div class="seagrass-blade"></div>
+                `;
+                document.getElementById('game-container').appendChild(grass);
+                return grass;
+            }
+
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                gameState.waterPollution = Math.max(0, gameState.waterPollution - 0.05 * deltaTime);
+            }
+
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        function removeKelp(kelp) {
+            const index = gameState.kelp.indexOf(kelp);
+            if (index > -1) {
+                gameState.kelp.splice(index, 1);
+                kelp.destroy();
+            }
+        }
+
+        // Sea Urchin Class
+        class SeaUrchin {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.hunger = 50 + Math.random() * 50;
+                this.speed = 0.2 + Math.random() * 0.2;
+                this.direction = Math.random() * Math.PI * 2;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const urchin = document.createElement('div');
+                urchin.className = 'sea-urchin fade-in';
+                urchin.style.left = this.x + 'px';
+                urchin.style.top = this.y + 'px';
+                urchin.innerHTML = '🦔';
+                document.getElementById('game-container').appendChild(urchin);
+                return urchin;
+            }
+
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+
+                this.hunger = Math.max(0, this.hunger - deltaTime * 0.5);
+
+                if (Math.random() < 0.05) {
+                    const nearbyKelp = gameState.kelp.find(k => {
+                        const dist = Math.sqrt((k.x - this.x) ** 2 + (k.y - this.y) ** 2);
+                        return dist < 60;
+                    });
+                    
+                    if (nearbyKelp) {
+                        const dx = nearbyKelp.x - this.x;
+                        const dy = nearbyKelp.y - this.y;
+                        this.direction = Math.atan2(dy, dx);
+                        
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 30) {
+                            this.hunger = Math.min(100, this.hunger + 40);
+                            logEvent(`Sea Urchin #${this.id} ate kelp! 🦔🌿`);
+                            removeKelp(nearbyKelp);
+                        }
+                    }
+                }
+
+                if (Math.random() < 0.02) {
+                    this.direction += (Math.random() - 0.5) * Math.PI / 4;
+                }
+
+                const moveSpeed = this.speed * deltaTime * 20;
+                this.x += Math.cos(this.direction) * moveSpeed;
+                this.y += Math.sin(this.direction) * moveSpeed;
+
+                const container = document.getElementById('game-container');
+                const oceanTop = container.clientHeight * 0.4;
+                
+                if (this.x < 0 || this.x > container.clientWidth - 50) {
+                    this.direction = Math.PI - this.direction;
+                }
+                if (this.y < oceanTop || this.y > container.clientHeight - 50) {
+                    this.direction = -this.direction;
+                }
+
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
             }
 
             destroy() {
@@ -1186,7 +1542,6 @@
                 
                 this.lastDecisionTime = now;
 
-                // Check if ready to lay eggs on island
                 if (this.canBreed && this.breedingCooldown <= 0 && this.hunger > 60 && this.energy > 60 && this.fertility > 70) {
                     const nearestIsland = this.findNearestIsland();
                     if (nearestIsland && !this.onIsland) {
@@ -1198,7 +1553,6 @@
                     }
                 }
 
-                // Check if duck can breed
                 if (this.canBreed && this.breedingCooldown <= 0 && this.hunger > 50 && this.energy > 50) {
                     const mate = this.findMate();
                     if (mate) {
@@ -1644,13 +1998,14 @@
                 this.element.classList.add('laying-egg');
                 setTimeout(() => this.element.classList.remove('laying-egg'), 2000);
 
-                const numEggs = Math.floor(this.fertility / 25) + 1; // 1-4 eggs based on fertility
+                const numEggs = Math.floor(this.fertility / 25) + 1;
 
                 for (let i = 0; i < numEggs; i++) {
                     setTimeout(() => {
                         const offsetX = (Math.random() - 0.5) * 60;
                         const offsetY = (Math.random() - 0.5) * 40;
-                        createEgg(island.x + 60 + offsetX, island.y + 60 + offsetY, this.color);
+                        const centerOffset = island.size === 'small' ? 30 : (island.size === 'medium' ? 45 : 60);
+                        createEgg(island.x + centerOffset + offsetX, island.y + centerOffset + offsetY, this.color);
                     }, i * 400);
                 }
 
@@ -1684,7 +2039,7 @@
 
             showThought(text) {
                 this.thinkingText = text;
-                this.thinkingTimer = 3000;
+                this.thinkingTimer = 1000 + Math.random() * 1500;
                 const bubble = this.element.querySelector('.duck-thinking');
                 bubble.textContent = text;
                 bubble.classList.add('show');
@@ -1724,7 +2079,11 @@
             }
         }
 
-        // Fish Class
+        // Fish, Food, Egg, Algae, Octopus, Elixir classes remain the same as before
+        // [Previous classes copied here - truncated for brevity but would be included in full file]
+        
+        // (Continuing with remaining classes...)
+// Fish Class
         class Fish {
             constructor(id, x, y) {
                 this.id = id;
@@ -2012,9 +2371,11 @@
                 if (this.type === 'toxic') {
                     algae.innerHTML = '🔴';
                     algae.style.opacity = '0.7';
+                    algae.setAttribute('data-type', '🔴 Toxic Algae Bloom');
                 } else {
                     algae.innerHTML = '🟢';
                     algae.style.opacity = '0.6';
+                    algae.setAttribute('data-type', '🟢 Healthy Algae');
                 }
                 
                 document.getElementById('game-container').appendChild(algae);
@@ -2032,35 +2393,6 @@
                 if (this.lifetime <= 0) {
                     removeAlgae(this);
                 }
-            }
-
-            destroy() {
-                this.element.remove();
-            }
-        }
-
-        // Seagrass Class
-        class Seagrass {
-            constructor(id, x, y) {
-                this.id = id;
-                this.x = x;
-                this.y = y;
-                this.element = this.createElement();
-            }
-
-            createElement() {
-                const grass = document.createElement('div');
-                grass.className = 'seagrass fade-in';
-                grass.style.left = this.x + 'px';
-                grass.style.top = this.y + 'px';
-                grass.innerHTML = '🌱';
-                document.getElementById('game-container').appendChild(grass);
-                return grass;
-            }
-
-            update(deltaTime) {
-                if (gameState.isPaused) return;
-                gameState.waterPollution = Math.max(0, gameState.waterPollution - 0.05 * deltaTime);
             }
 
             destroy() {
@@ -2240,16 +2572,53 @@
             logEvent(`New ${duck.personality} duck #${duck.id} joined the pond!`);
         }
 
-        function addIsland() {
+        function addIsland(size = null) {
             const container = document.getElementById('game-container');
             const oceanTop = container.clientHeight * 0.4;
             const x = Math.random() * (container.clientWidth - 150);
             const y = oceanTop + Math.random() * (container.clientHeight * 0.25);
             
-            const island = new Island(gameState.nextIslandId++, x, y);
+            if (!size) {
+                const rand = Math.random();
+                if (rand < 0.4) size = 'small';
+                else if (rand < 0.75) size = 'medium';
+                else size = 'large';
+            }
+            
+            const island = new Island(gameState.nextIslandId++, x, y, size);
             gameState.islands.push(island);
             updateHUD();
-            logEvent(`Island #${island.id} appeared! 🏝️`);
+            logEvent(`${size.charAt(0).toUpperCase() + size.slice(1)} Island #${island.id} appeared! 🏝️`);
+        }
+
+        function addCoralReef() {
+            const container = document.getElementById('game-container');
+            const oceanTop = container.clientHeight * 0.4;
+            const x = Math.random() * (container.clientWidth - 50);
+            const y = oceanTop + Math.random() * (container.clientHeight * 0.5);
+            
+            const coral = new CoralReef(gameState.nextCoralId++, x, y);
+            gameState.coralReefs.push(coral);
+        }
+
+        function addKelp() {
+            const container = document.getElementById('game-container');
+            const x = Math.random() * (container.clientWidth - 50);
+            
+            const kelp = new Kelp(gameState.nextKelpId++, x, 0);
+            gameState.kelp.push(kelp);
+        }
+
+        function addSeaUrchin() {
+            const container = document.getElementById('game-container');
+            const oceanTop = container.clientHeight * 0.4;
+            const x = Math.random() * (container.clientWidth - 50);
+            const y = oceanTop + Math.random() * (container.clientHeight * 0.3);
+            
+            const urchin = new SeaUrchin(gameState.nextUrchinId++, x, y);
+            gameState.seaUrchins.push(urchin);
+            updateHUD();
+            logEvent(`Sea Urchin #${urchin.id} appeared! 🦔`);
         }
 
         function addFish() {
@@ -2338,11 +2707,9 @@
 
         function addSeagrass() {
             const container = document.getElementById('game-container');
-            const oceanTop = container.clientHeight * 0.4;
             const x = Math.random() * (container.clientWidth - 50);
-            const y = oceanTop + Math.random() * (container.clientHeight * 0.5);
             
-            const grass = new Seagrass(gameState.nextSeagrassId++, x, y);
+            const grass = new Seagrass(gameState.nextSeagrassId++, x, 0);
             gameState.seagrass.push(grass);
         }
 
@@ -2397,6 +2764,7 @@
             document.getElementById('island-count').textContent = gameState.islands.length;
             document.getElementById('fish-count').textContent = gameState.fish.length;
             document.getElementById('food-count').textContent = gameState.food.length;
+            document.getElementById('urchin-count').textContent = gameState.seaUrchins.length;
         }
 
         function updateDayNight() {
@@ -2446,6 +2814,7 @@
         let lastTime = Date.now();
         let algaeSpawnTimer = 0;
         let seagrassSpawnTimer = 0;
+        let kelpSpawnTimer = 0;
 
         function gameLoop() {
             const now = Date.now();
@@ -2456,7 +2825,6 @@
                 gameState.time += deltaTime;
                 document.getElementById('time-elapsed').textContent = Math.floor(gameState.time) + 's';
 
-                // Day/Night cycle
                 gameState.dayNightCycle += deltaTime;
                 if (gameState.dayNightCycle >= gameState.dayNightDuration) {
                     gameState.dayNightCycle = 0;
@@ -2473,6 +2841,7 @@
                 gameState.seagrass.forEach(grass => grass.update(deltaTime));
                 gameState.octopi.forEach(octopus => octopus.update(deltaTime));
                 gameState.elixirs.forEach(elixir => elixir.update(deltaTime));
+                gameState.seaUrchins.forEach(urchin => urchin.update(deltaTime));
 
                 algaeSpawnTimer += deltaTime;
                 const spawnInterval = Math.max(3, 10 - (gameState.ducks.length + gameState.fish.length) * 0.3);
@@ -2483,9 +2852,15 @@
                 }
 
                 seagrassSpawnTimer += deltaTime;
-                if (seagrassSpawnTimer >= 15 && gameState.seagrass.length < 8) {
+                if (seagrassSpawnTimer >= 15 && gameState.seagrass.length < 12) {
                     seagrassSpawnTimer = 0;
                     addSeagrass();
+                }
+
+                kelpSpawnTimer += deltaTime;
+                if (kelpSpawnTimer >= 12 && gameState.kelp.length < 15) {
+                    kelpSpawnTimer = 0;
+                    addKelp();
                 }
 
                 updatePollutionIndicator();
@@ -2603,9 +2978,11 @@
             createStars();
             
             logEvent('🌊 Welcome to Sea of Ducks Ecosystem!');
-            logEvent('🏝️ Islands appear - ducks lay eggs there!');
+            logEvent('🏝️ CSS kelp and seagrass for realism!');
             logEvent('🦆 Ducks hunt and breed based on nutrition');
             logEvent('🐟 Fish and 🦐 shrimp eat algae and reproduce');
+            logEvent('🦔 Sea urchins eat kelp');
+            logEvent('🪸 Coral reefs add beauty');
             logEvent('🔴 Red algae pollutes water when overpopulated');
             logEvent('🐙 Octopi tickle ducks and open elixir jars!');
             logEvent('🫙 Elixir jars remove toxic algae');
@@ -2613,18 +2990,36 @@
             
             addDuck();
             addDuck();
-            addIsland();
+            
+            const numIslands = 1 + Math.floor(Math.random() * 5);
+            for (let i = 0; i < numIslands; i++) {
+                addIsland();
+            }
+            
             addFish();
             addFood();
             addFood();
             
-            for (let i = 0; i < 5; i++) {
+            addSeaUrchin();
+            addSeaUrchin();
+            
+            for (let i = 0; i < 4; i++) {
+                addCoralReef();
+            }
+            
+            for (let i = 0; i < 8; i++) {
+                addKelp();
+            }
+            
+            for (let i = 0; i < 6; i++) {
                 addSeagrass();
             }
+            
             for (let i = 0; i < 3; i++) {
                 addAlgae('healthy');
             }
             
+            updateHUD();
             gameLoop();
         });
     </script>
