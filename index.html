@@ -352,17 +352,54 @@
             }
         }
 
-        .sea-urchin {
+        .sea-creature {
             position: absolute;
             font-size: 28px;
             z-index: 5;
             cursor: pointer;
-            animation: urchinPulse 3s ease-in-out infinite;
+            transition: transform 0.3s ease;
         }
 
-        @keyframes urchinPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .sea-creature:hover {
+            transform: scale(1.2);
+        }
+
+        .sea-creature.jellyfish {
+            animation: jellyfishFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes jellyfishFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .sea-creature.shell {
+            animation: shellIdle 6s ease-in-out infinite;
+        }
+
+        @keyframes shellIdle {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        .sea-creature.whale {
+            font-size: 48px;
+            animation: whaleSwim 5s ease-in-out infinite;
+        }
+
+        @keyframes whaleSwim {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .sea-creature.dolphin {
+            animation: dolphinJump 3s ease-in-out infinite;
+        }
+
+        @keyframes dolphinJump {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(-10deg); }
+            75% { transform: translateY(-10px) rotate(10deg); }
         }
 
         .duck {
@@ -421,8 +458,12 @@
                 font-size: 32px;
             }
 
-            .sea-urchin {
+            .sea-creature {
                 font-size: 22px;
+            }
+
+            .sea-creature.whale {
+                font-size: 38px;
             }
         }
 
@@ -459,8 +500,12 @@
                 font-size: 26px;
             }
 
-            .sea-urchin {
+            .sea-creature {
                 font-size: 18px;
+            }
+
+            .sea-creature.whale {
+                font-size: 32px;
             }
         }
 
@@ -922,7 +967,7 @@
 
         .controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 10px;
             left: 10px;
             right: 10px;
             display: flex;
@@ -1136,8 +1181,8 @@
                 <span class="hud-value" id="food-count">0</span>
             </div>
             <div class="hud-stat">
-                <span>🦔 Urchins:</span>
-                <span class="hud-value" id="urchin-count">0</span>
+                <span>🌊 Sea Life:</span>
+                <span class="hud-value" id="creature-count">0</span>
             </div>
             <div class="hud-stat">
                 <span>⏱️ Time:</span>
@@ -1191,7 +1236,7 @@
             islands: [],
             coralReefs: [],
             kelp: [],
-            seaUrchins: [],
+            seaCreatures: [],
             isPaused: false,
             time: 0,
             nextDuckId: 1,
@@ -1205,7 +1250,7 @@
             nextIslandId: 1,
             nextCoralId: 1,
             nextKelpId: 1,
-            nextUrchinId: 1,
+            nextCreatureId: 1,
             waterPollution: 0,
             isNight: false,
             dayNightCycle: 0,
@@ -1370,34 +1415,59 @@
             }
         }
 
-        // Sea Urchin Class
-        class SeaUrchin {
-            constructor(id, x, y) {
+        // Sea Creature Class (Random ocean animals)
+        class SeaCreature {
+            constructor(id, x, y, type = null) {
                 this.id = id;
                 this.x = x;
                 this.y = y;
+                
+                // Define creature types with their properties
+                const creatureTypes = [
+                    { emoji: '🦑', name: 'Squid', speed: 0.6, eatsKelp: false, mobile: true, size: 28 },
+                    { emoji: '🦈', name: 'Shark', speed: 0.8, eatsKelp: false, mobile: true, size: 32 },
+                    { emoji: '🦭', name: 'Seal', speed: 0.5, eatsKelp: false, mobile: true, size: 30 },
+                    { emoji: '🦦', name: 'Otter', speed: 0.4, eatsKelp: false, mobile: true, size: 28 },
+                    { emoji: '🪼', name: 'Jellyfish', speed: 0.2, eatsKelp: false, mobile: true, size: 26, class: 'jellyfish' },
+                    { emoji: '🐚', name: 'Shell', speed: 0, eatsKelp: false, mobile: false, size: 24, class: 'shell' },
+                    { emoji: '🦞', name: 'Lobster', speed: 0.3, eatsKelp: true, mobile: true, size: 28 },
+                    { emoji: '🐠', name: 'Tropical Fish', speed: 0.7, eatsKelp: false, mobile: true, size: 26 },
+                    { emoji: '🦀', name: 'Crab', speed: 0.25, eatsKelp: true, mobile: true, size: 26 },
+                    { emoji: '🐬', name: 'Dolphin', speed: 0.9, eatsKelp: false, mobile: true, size: 32, class: 'dolphin' },
+                    { emoji: '🐳', name: 'Whale', speed: 0.3, eatsKelp: false, mobile: true, size: 48, class: 'whale' }
+                ];
+                
+                this.type = type || creatureTypes[Math.floor(Math.random() * creatureTypes.length)];
                 this.hunger = 50 + Math.random() * 50;
-                this.speed = 0.2 + Math.random() * 0.2;
+                this.speed = this.type.speed + Math.random() * 0.2;
                 this.direction = Math.random() * Math.PI * 2;
                 this.element = this.createElement();
             }
 
             createElement() {
-                const urchin = document.createElement('div');
-                urchin.className = 'sea-urchin fade-in';
-                urchin.style.left = this.x + 'px';
-                urchin.style.top = this.y + 'px';
-                urchin.innerHTML = '🦔';
-                document.getElementById('game-container').appendChild(urchin);
-                return urchin;
+                const creature = document.createElement('div');
+                creature.className = 'sea-creature fade-in';
+                if (this.type.class) {
+                    creature.classList.add(this.type.class);
+                }
+                creature.style.left = this.x + 'px';
+                creature.style.top = this.y + 'px';
+                creature.style.fontSize = this.type.size + 'px';
+                creature.innerHTML = this.type.emoji;
+                creature.title = this.type.name;
+                document.getElementById('game-container').appendChild(creature);
+                return creature;
             }
 
             update(deltaTime) {
                 if (gameState.isPaused) return;
+                
+                if (!this.type.mobile) return; // Shells don't move
 
                 this.hunger = Math.max(0, this.hunger - deltaTime * 0.5);
 
-                if (Math.random() < 0.05) {
+                // Kelp-eating creatures
+                if (this.type.eatsKelp && Math.random() < 0.05) {
                     const nearbyKelp = gameState.kelp.find(k => {
                         const dist = Math.sqrt((k.x - this.x) ** 2 + (k.y - this.y) ** 2);
                         return dist < 60;
@@ -1411,12 +1481,13 @@
                         const dist = Math.sqrt(dx * dx + dy * dy);
                         if (dist < 30) {
                             this.hunger = Math.min(100, this.hunger + 40);
-                            logEvent(`Sea Urchin #${this.id} ate kelp! 🦔🌿`);
+                            logEvent(`${this.type.name} #${this.id} ate kelp! ${this.type.emoji}🌿`);
                             removeKelp(nearbyKelp);
                         }
                     }
                 }
 
+                // Random movement changes
                 if (Math.random() < 0.02) {
                     this.direction += (Math.random() - 0.5) * Math.PI / 4;
                 }
@@ -1428,6 +1499,7 @@
                 const container = document.getElementById('game-container');
                 const oceanTop = container.clientHeight * 0.4;
                 
+                // Boundary checking
                 if (this.x < 0 || this.x > container.clientWidth - 50) {
                     this.direction = Math.PI - this.direction;
                 }
@@ -1437,6 +1509,13 @@
 
                 this.element.style.left = this.x + 'px';
                 this.element.style.top = this.y + 'px';
+                
+                // Flip horizontally based on direction
+                if (Math.cos(this.direction) < 0) {
+                    this.element.style.transform = 'scaleX(-1)';
+                } else {
+                    this.element.style.transform = 'scaleX(1)';
+                }
             }
 
             destroy() {
@@ -2609,16 +2688,16 @@
             gameState.kelp.push(kelp);
         }
 
-        function addSeaUrchin() {
+        function addSeaCreature() {
             const container = document.getElementById('game-container');
             const oceanTop = container.clientHeight * 0.4;
             const x = Math.random() * (container.clientWidth - 50);
             const y = oceanTop + Math.random() * (container.clientHeight * 0.3);
             
-            const urchin = new SeaUrchin(gameState.nextUrchinId++, x, y);
-            gameState.seaUrchins.push(urchin);
+            const creature = new SeaCreature(gameState.nextCreatureId++, x, y);
+            gameState.seaCreatures.push(creature);
             updateHUD();
-            logEvent(`Sea Urchin #${urchin.id} appeared! 🦔`);
+            logEvent(`${creature.type.name} #${creature.id} appeared! ${creature.type.emoji}`);
         }
 
         function addFish() {
@@ -2764,7 +2843,7 @@
             document.getElementById('island-count').textContent = gameState.islands.length;
             document.getElementById('fish-count').textContent = gameState.fish.length;
             document.getElementById('food-count').textContent = gameState.food.length;
-            document.getElementById('urchin-count').textContent = gameState.seaUrchins.length;
+            document.getElementById('creature-count').textContent = gameState.seaCreatures.length;
         }
 
         function updateDayNight() {
@@ -2841,7 +2920,7 @@
                 gameState.seagrass.forEach(grass => grass.update(deltaTime));
                 gameState.octopi.forEach(octopus => octopus.update(deltaTime));
                 gameState.elixirs.forEach(elixir => elixir.update(deltaTime));
-                gameState.seaUrchins.forEach(urchin => urchin.update(deltaTime));
+                gameState.seaCreatures.forEach(creature => creature.update(deltaTime));
 
                 algaeSpawnTimer += deltaTime;
                 const spawnInterval = Math.max(3, 10 - (gameState.ducks.length + gameState.fish.length) * 0.3);
@@ -2981,7 +3060,7 @@
             logEvent('🏝️ CSS kelp and seagrass for realism!');
             logEvent('🦆 Ducks hunt and breed based on nutrition');
             logEvent('🐟 Fish and 🦐 shrimp eat algae and reproduce');
-            logEvent('🦔 Sea urchins eat kelp');
+            logEvent('🌊 Random sea creatures populate the ocean!');
             logEvent('🪸 Coral reefs add beauty');
             logEvent('🔴 Red algae pollutes water when overpopulated');
             logEvent('🐙 Octopi tickle ducks and open elixir jars!');
@@ -3000,8 +3079,11 @@
             addFood();
             addFood();
             
-            addSeaUrchin();
-            addSeaUrchin();
+            // Add random sea creatures
+            const numCreatures = 3 + Math.floor(Math.random() * 5);
+            for (let i = 0; i < numCreatures; i++) {
+                addSeaCreature();
+            }
             
             for (let i = 0; i < 4; i++) {
                 addCoralReef();
