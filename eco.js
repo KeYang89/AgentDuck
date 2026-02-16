@@ -279,7 +279,7 @@ class Island {
         switch(this.size) {
             case 'small':
                 fontSize = 90;
-                grassCount = 5;
+                grassCount = 4;
                 grassHeight = 20;
                 break;
             case 'medium':
@@ -1825,7 +1825,7 @@ class Octopus {
     }
 
     openElixir(elixir) {
-        logEvent(`Octopus #${this.id} opened an elixir jar! 🐙 ⚗️`);
+        logEvent(`Octopus #${this.id} opened an elixir! 🐙🧪`);
         
         const toxicAlgae = gameState.algae.filter(a => a.type === 'toxic');
         toxicAlgae.forEach(algae => removeAlgae(algae));
@@ -1861,7 +1861,7 @@ class Elixir {
         elixir.className = 'elixir fade-in';
         elixir.style.left = this.x + 'px';
         elixir.style.top = this.y + 'px';
-        elixir.innerHTML = '⚗️';
+        elixir.innerHTML = '🧪';
         document.getElementById('game-container').appendChild(elixir);
         
         // Set target to water surface
@@ -2079,16 +2079,53 @@ function removePredator(predator) {
 }
 
 function addIsland(size = null) {
+    if (gameState.islands.length >= CONFIG.MAX_ENTITIES.islands) return;
+    
     const container = document.getElementById('game-container');
     const oceanTop = container.clientHeight * 0.4;
-    const x = Math.random() * (container.clientWidth - 200);
-    const y = oceanTop + Math.random() * (container.clientHeight * 0.25);
     
     if (!size) {
         const rand = Math.random();
         if (rand < 0.3) size = 'small';
         else if (rand < 0.65) size = 'medium';
         else size = 'large';
+    }
+    
+    // Calculate island dimensions based on size
+    const islandWidth = size === 'small' ? 90 : (size === 'medium' ? 140 : 180);
+    const islandHeight = size === 'small' ? 90 : (size === 'medium' ? 140 : 180);
+    const minSeparation = size === 'small' ? 150 : (size === 'medium' ? 200 : 250);
+    
+    // Try to find a non-overlapping position (max 50 attempts)
+    let x, y, attempts = 0, validPosition = false;
+    
+    while (!validPosition && attempts < 50) {
+        x = Math.random() * (container.clientWidth - islandWidth - 20) + 10;
+        y = oceanTop + Math.random() * (container.clientHeight * 0.25);
+        
+        // Check if this position overlaps with any existing island
+        validPosition = true;
+        for (const existingIsland of gameState.islands) {
+            const existingWidth = existingIsland.size === 'small' ? 90 : (existingIsland.size === 'medium' ? 140 : 180);
+            const centerOffset = existingIsland.size === 'small' ? 45 : (existingIsland.size === 'medium' ? 70 : 90);
+            const newCenterOffset = size === 'small' ? 45 : (size === 'medium' ? 70 : 90);
+            
+            const dx = (x + newCenterOffset) - (existingIsland.x + centerOffset);
+            const dy = (y + newCenterOffset) - (existingIsland.y + centerOffset);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minSeparation) {
+                validPosition = false;
+                break;
+            }
+        }
+        attempts++;
+    }
+    
+    // If we couldn't find a valid position after 50 attempts, don't spawn the island
+    if (!validPosition) {
+        logEvent('⚠️ Not enough space to spawn a new island');
+        return;
     }
     
     const island = new Island(gameState.nextIslandId++, x, y, size);
@@ -2237,7 +2274,7 @@ function addElixir() {
     const elixir = new Elixir(gameState.nextElixirId++, x, y);
     gameState.elixirs.push(elixir);
     updateHUD(true);
-    logEvent('Added water purification elixir jar ⚗️');
+    logEvent('Added water purification elixir 🧪');
 }
 
 function removeElixir(elixir) {
@@ -2558,7 +2595,7 @@ window.addEventListener('load', () => {
     logEvent('🪸 Beautiful SVG coral reef on the ocean floor!');
     logEvent('🌿 Seagrass grows naturally around islands!');
     logEvent('🦐 Shrimp fall naturally and swim in water!');
-    logEvent('🫙 Elixir bottles drop into the water with splash!');
+    logEvent('🧪 Elixir bottles drop into the water with splash!');
     logEvent('📊 Click "Sea of Ducks" to collapse/expand stats');
     logEvent('🦆 Ducks have lifespans and breed');
     logEvent('🐕🐈 Predators hunt and reproduce');
