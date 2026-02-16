@@ -31,6 +31,22 @@
             --night-sky-3: #2c5364;
         }
 
+        /* Z-INDEX LAYERING SYSTEM:
+         * 0: Stars
+         * 1: Seagrass (ocean floor)
+         * 2: Kelp, Coral, Algae (ocean floor/plants)
+         * 3: (reserved)
+         * 4: Islands
+         * 5: Fish, Sea Creatures (swimming)
+         * 6: Octopi
+         * 8: Food items (floating)
+         * 9: Eggs, Elixirs
+         * 10: Ducks (swimming/flying)
+         * 11: Predators (on islands)
+         * 99-100: UI elements (duck stats, thinking bubbles)
+         * 1000: HUD and controls
+         */
+
         body {
             font-family: 'DM Sans', sans-serif;
             background: linear-gradient(180deg, var(--sky-gradient-1) 0%, var(--sky-gradient-2) 40%, var(--sky-gradient-3) 100%);
@@ -167,17 +183,18 @@
         /* CSS GRASS BLADES - Replacing emoji */
         .island-grass {
             position: absolute;
-            top: 15%;
+            top: 35%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 8px;
             z-index: 2;
+            pointer-events: none;
         }
 
         .grass-blade-group {
             position: relative;
-            width: 20px;
+            width: 16px;
             height: 30px;
             animation: grassSway 3s ease-in-out infinite;
             transform-origin: bottom center;
@@ -202,7 +219,7 @@
         .grass-blade {
             position: absolute;
             bottom: 0;
-            width: 6px;
+            width: 5px;
             height: 100%;
             background: linear-gradient(to top,
                 #2d6016 0%,
@@ -221,13 +238,13 @@
         }
 
         .grass-blade:nth-child(2) {
-            left: 7px;
+            left: 5px;
             height: 85%;
             transform: rotate(2deg);
         }
 
         .grass-blade:nth-child(3) {
-            left: 14px;
+            left: 10px;
             height: 95%;
             transform: rotate(-2deg);
         }
@@ -251,12 +268,14 @@
 
         .island-base {
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
         }
 
         .coral-reef {
             position: absolute;
             font-size: 40px;
-            z-index: 3;
+            z-index: 2;
             animation: coralSway 5s ease-in-out infinite;
             cursor: pointer;
             will-change: transform;
@@ -269,7 +288,7 @@
 
         .kelp {
             position: absolute;
-            z-index: 3;
+            z-index: 2;
             cursor: pointer;
             width: 12px;
             height: 80px;
@@ -319,18 +338,17 @@
 
         .seagrass {
             position: absolute;
-            z-index: 2;
-            width: 8px;
-            height: 50px;
+            z-index: 1;
+            width: 25px;
+            height: 60px;
             transform-origin: bottom center;
-            animation: seagrassSway 4s ease-in-out infinite;
             will-change: transform;
         }
 
         .seagrass-blade {
             position: absolute;
             bottom: 0;
-            width: 100%;
+            width: 6px;
             height: 100%;
             background: linear-gradient(to top,
                 #1a4d2e 0%,
@@ -342,24 +360,6 @@
             box-shadow: 
                 inset -1px 0 2px rgba(0,0,0,0.3),
                 1px 0 2px rgba(0,0,0,0.2);
-        }
-
-        .seagrass-blade:nth-child(1) {
-            left: -4px;
-            height: 100%;
-            opacity: 0.9;
-        }
-
-        .seagrass-blade:nth-child(2) {
-            left: 0;
-            height: 85%;
-            opacity: 1;
-        }
-
-        .seagrass-blade:nth-child(3) {
-            left: 4px;
-            height: 95%;
-            opacity: 0.85;
         }
 
         @keyframes seagrassSway {
@@ -579,7 +579,7 @@
         .algae {
             position: absolute;
             font-size: 24px;
-            z-index: 3;
+            z-index: 2;
             animation: algaeGrow 3s ease-in-out infinite;
             cursor: pointer;
             will-change: transform, opacity;
@@ -765,14 +765,51 @@
         .food-item {
             position: absolute;
             font-size: 20px;
-            animation: foodFloat 3s ease-in-out infinite;
             cursor: grab;
             z-index: 8;
             will-change: transform;
+            transition: transform 0.1s ease;
+        }
+
+        .food-item.falling {
+            animation: shrimpFall 0.8s ease-in forwards;
+        }
+
+        .food-item.swimming {
+            animation: shrimpSwim 2s ease-in-out infinite;
         }
 
         .food-item:active {
             cursor: grabbing;
+        }
+
+        @keyframes shrimpFall {
+            0% { 
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(20px) rotate(180deg) scale(1.1);
+            }
+            100% { 
+                transform: translateY(40px) rotate(360deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shrimpSwim {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg); 
+            }
+            25% { 
+                transform: translateY(-8px) rotate(-5deg); 
+            }
+            50% { 
+                transform: translateY(-4px) rotate(0deg); 
+            }
+            75% { 
+                transform: translateY(-8px) rotate(5deg); 
+            }
         }
 
         @keyframes foodFloat {
@@ -816,21 +853,58 @@
             left: 10px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            padding: 12px 16px;
+            padding: 0;
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             font-family: 'DM Sans', sans-serif;
             min-width: 220px;
             max-width: 300px;
             backdrop-filter: blur(10px);
             z-index: 1000;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .hud.collapsed {
+            max-height: 50px;
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .hud-header:hover {
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .hud h1 {
             font-family: 'Shrikhand', cursive;
             color: var(--ocean-deep);
             font-size: 20px;
-            margin-bottom: 10px;
+            margin: 0;
             text-shadow: 2px 2px 0 var(--duck-yellow);
+        }
+
+        .hud-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+            color: var(--ocean-deep);
+        }
+
+        .hud.collapsed .hud-toggle {
+            transform: rotate(180deg);
+        }
+
+        .hud-content {
+            padding: 0 16px 12px 16px;
+        }
+
+        .hud.collapsed .hud-content {
+            display: none;
         }
 
         .hud-stat {
@@ -984,6 +1058,27 @@
             margin-bottom: 4px;
         }
 
+        @keyframes splashFloat {
+            0% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1) rotate(0deg); 
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateY(-20px) scale(1.2) rotate(180deg);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-40px) scale(0.5) rotate(360deg); 
+            }
+        }
+
+        .splash-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -995,13 +1090,28 @@
 
         @media (max-width: 768px) {
             .hud {
-                padding: 10px 14px;
                 min-width: 180px;
                 max-width: 220px;
             }
 
+            .hud.collapsed {
+                max-height: 45px;
+            }
+
+            .hud-header {
+                padding: 10px 14px;
+            }
+
             .hud h1 {
                 font-size: 18px;
+            }
+
+            .hud-toggle {
+                font-size: 16px;
+            }
+
+            .hud-content {
+                padding: 0 14px 10px 14px;
             }
 
             .hud-stat {
@@ -1027,12 +1137,20 @@
             }
 
             .grass-blade-group {
-                width: 16px;
-                height: 24px;
+                width: 12px;
+                height: 20px;
             }
 
             .grass-blade {
-                width: 5px;
+                width: 4px;
+            }
+
+            .grass-blade:nth-child(2) {
+                left: 4px;
+            }
+
+            .grass-blade:nth-child(3) {
+                left: 8px;
             }
         }
     </style>
@@ -1048,61 +1166,66 @@
             <div class="wave"></div>
         </div>
 
-        <div class="hud fade-in">
-            <h1>Sea of Ducks</h1>
-            <div class="hud-stat">
-                <span>🦆 Ducks:</span>
-                <span class="hud-value" id="duck-count">0</span>
+        <div class="hud fade-in" id="hud">
+            <div class="hud-header" onclick="toggleHUD()">
+                <h1>Sea of Ducks</h1>
+                <span class="hud-toggle">▼</span>
             </div>
-            <div class="hud-stat">
-                <span>🥚 Eggs:</span>
-                <span class="hud-value" id="egg-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>🏝️ Islands:</span>
-                <span class="hud-value" id="island-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>🐕🐈 Predators:</span>
-                <span class="hud-value" id="predator-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>🐟 Fish:</span>
-                <span class="hud-value" id="fish-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>🦐 Shrimp:</span>
-                <span class="hud-value" id="food-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>🌊 Sea Life:</span>
-                <span class="hud-value" id="creature-count">0</span>
-            </div>
-            <div class="hud-stat">
-                <span>⏱️ Time:</span>
-                <span class="hud-value" id="time-elapsed">0s</span>
-            </div>
-            <div class="hud-stat">
-                <span id="time-of-day-icon">☀️</span>
-                <span class="hud-value" id="time-of-day">Day</span>
-            </div>
-            <div class="hud-divider"></div>
-            <div class="hud-quality">
-                <strong>💧 Water Quality</strong>
-                <div class="pollution-bar">
-                    <div class="pollution-fill pollution-low" id="pollution-fill" style="width: 0%"></div>
+            <div class="hud-content">
+                <div class="hud-stat">
+                    <span>🦆 Ducks:</span>
+                    <span class="hud-value" id="duck-count">0</span>
                 </div>
-                <div style="font-size: 10px; margin-top: 4px; color: #666;">
-                    Pollution: <span id="pollution-value">0</span>%
+                <div class="hud-stat">
+                    <span>🥚 Eggs:</span>
+                    <span class="hud-value" id="egg-count">0</span>
                 </div>
-            </div>
-            <div class="hud-quality">
-                <strong>🌿 Biodiversity</strong>
-                <div class="biodiversity-bar">
-                    <div class="biodiversity-fill biodiversity-high" id="biodiversity-fill" style="width: 100%"></div>
+                <div class="hud-stat">
+                    <span>🏝️ Islands:</span>
+                    <span class="hud-value" id="island-count">0</span>
                 </div>
-                <div style="font-size: 10px; margin-top: 4px; color: #666;">
-                    Score: <span id="biodiversity-value">100</span>%
+                <div class="hud-stat">
+                    <span>🐕🐈 Predators:</span>
+                    <span class="hud-value" id="predator-count">0</span>
+                </div>
+                <div class="hud-stat">
+                    <span>🐟 Fish:</span>
+                    <span class="hud-value" id="fish-count">0</span>
+                </div>
+                <div class="hud-stat">
+                    <span>🦐 Shrimp:</span>
+                    <span class="hud-value" id="food-count">0</span>
+                </div>
+                <div class="hud-stat">
+                    <span>🌊 Sea Life:</span>
+                    <span class="hud-value" id="creature-count">0</span>
+                </div>
+                <div class="hud-stat">
+                    <span>⏱️ Time:</span>
+                    <span class="hud-value" id="time-elapsed">0s</span>
+                </div>
+                <div class="hud-stat">
+                    <span id="time-of-day-icon">☀️</span>
+                    <span class="hud-value" id="time-of-day">Day</span>
+                </div>
+                <div class="hud-divider"></div>
+                <div class="hud-quality">
+                    <strong>💧 Water Quality</strong>
+                    <div class="pollution-bar">
+                        <div class="pollution-fill pollution-low" id="pollution-fill" style="width: 0%"></div>
+                    </div>
+                    <div style="font-size: 10px; margin-top: 4px; color: #666;">
+                        Pollution: <span id="pollution-value">0</span>%
+                    </div>
+                </div>
+                <div class="hud-quality">
+                    <strong>🌿 Biodiversity</strong>
+                    <div class="biodiversity-bar">
+                        <div class="biodiversity-fill biodiversity-high" id="biodiversity-fill" style="width: 100%"></div>
+                    </div>
+                    <div style="font-size: 10px; margin-top: 4px; color: #666;">
+                        Score: <span id="biodiversity-value">100</span>%
+                    </div>
                 </div>
             </div>
         </div>
@@ -1225,17 +1348,17 @@
                     case 'small':
                         fontSize = 90;
                         grassCount = 3;
-                        grassHeight = 30;
+                        grassHeight = 20;
                         break;
                     case 'medium':
                         fontSize = 140;
                         grassCount = 4;
-                        grassHeight = 38;
+                        grassHeight = 25;
                         break;
                     case 'large':
                         fontSize = 180;
                         grassCount = 5;
-                        grassHeight = 45;
+                        grassHeight = 30;
                         break;
                 }
                 
@@ -2404,14 +2527,24 @@
         }
 
         class Food {
-            constructor(id, x, y) {
+            constructor(id, x, y, shouldFall = true) {
                 this.id = id;
                 this.x = x;
                 this.y = y;
                 this.lifetime = 30000;
                 this.hunger = 50;
                 this.reproductionCooldown = 15;
+                this.isFalling = shouldFall;
+                this.velocityY = 0;
+                this.gravity = 300; // pixels per second squared
+                this.hasEnteredWater = false;
+                this.swimDirection = Math.random() * Math.PI * 2;
+                this.swimSpeed = 0.3 + Math.random() * 0.2;
                 this.element = this.createElement();
+                
+                if (this.isFalling) {
+                    this.element.classList.add('falling');
+                }
             }
 
             createElement() {
@@ -2426,6 +2559,70 @@
 
             update(deltaTime) {
                 if (gameState.isPaused) return;
+                
+                // Handle falling physics
+                if (this.isFalling) {
+                    const container = document.getElementById('game-container');
+                    const waterSurface = container.clientHeight * 0.40;
+                    
+                    // Apply gravity
+                    this.velocityY += this.gravity * deltaTime;
+                    this.y += this.velocityY * deltaTime;
+                    
+                    // Check if entered water
+                    if (this.y >= waterSurface && !this.hasEnteredWater) {
+                        this.hasEnteredWater = true;
+                        this.isFalling = false;
+                        this.velocityY = 0;
+                        this.y = waterSurface + 10; // Slight offset into water
+                        
+                        // Add splash effect
+                        this.createSplash();
+                        
+                        // Switch to swimming animation
+                        this.element.classList.remove('falling');
+                        this.element.classList.add('swimming');
+                        
+                        logEvent(`Shrimp #${this.id} splashed into the water! 🦐💦`);
+                    }
+                    
+                    this.element.style.top = this.y + 'px';
+                    return; // Skip other updates while falling
+                }
+                
+                // Swimming behavior
+                if (this.hasEnteredWater) {
+                    // Random direction changes
+                    if (Math.random() < 0.02) {
+                        this.swimDirection += (Math.random() - 0.5) * Math.PI / 3;
+                    }
+                    
+                    // Swim around
+                    const moveSpeed = this.swimSpeed * deltaTime * 25;
+                    this.x += Math.cos(this.swimDirection) * moveSpeed;
+                    this.y += Math.sin(this.swimDirection) * moveSpeed;
+                    
+                    // Boundary checking
+                    const container = document.getElementById('game-container');
+                    const oceanTop = container.clientHeight * 0.4;
+                    
+                    if (this.x < 0 || this.x > container.clientWidth - 30) {
+                        this.swimDirection = Math.PI - this.swimDirection;
+                    }
+                    if (this.y < oceanTop || this.y > container.clientHeight - 30) {
+                        this.swimDirection = -this.swimDirection;
+                    }
+                    
+                    this.element.style.left = this.x + 'px';
+                    this.element.style.top = this.y + 'px';
+                    
+                    // Flip based on direction
+                    if (Math.cos(this.swimDirection) < 0) {
+                        this.element.style.transform = 'scaleX(-1)';
+                    } else {
+                        this.element.style.transform = 'scaleX(1)';
+                    }
+                }
                 
                 this.lifetime -= deltaTime * 1000;
                 this.hunger = Math.max(0, this.hunger - deltaTime * 0.5);
@@ -2464,6 +2661,27 @@
                 }
             }
 
+            createSplash() {
+                // Create splash particles
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const splash = document.createElement('div');
+                        splash.className = 'splash-particle';
+                        splash.textContent = '💧';
+                        splash.style.position = 'absolute';
+                        splash.style.left = (this.x + (Math.random() - 0.5) * 30) + 'px';
+                        splash.style.top = this.y + 'px';
+                        splash.style.fontSize = '16px';
+                        splash.style.pointerEvents = 'none';
+                        splash.style.zIndex = '100';
+                        splash.style.animation = 'splashFloat 0.8s ease-out forwards';
+                        
+                        document.getElementById('game-container').appendChild(splash);
+                        setTimeout(() => splash.remove(), 800);
+                    }, i * 50);
+                }
+            }
+
             reproduce(mate) {
                 this.reproductionCooldown = 20;
                 mate.reproductionCooldown = 20;
@@ -2471,7 +2689,8 @@
                 const babyX = (this.x + mate.x) / 2 + (Math.random() - 0.5) * 40;
                 const babyY = (this.y + mate.y) / 2 + (Math.random() - 0.5) * 40;
                 
-                addFoodAt(babyX, babyY);
+                // Babies don't fall, they're born in water
+                addFoodAt(babyX, babyY, false);
             }
 
             destroy() {
@@ -2770,11 +2989,12 @@
             }
         }
 
+        // Seagrass - Small grass that grows around islands on the ocean floor
         class Seagrass {
             constructor(id, x, y) {
                 this.id = id;
                 this.x = x;
-                this.y = y;
+                this.yOffset = y; // Offset from bottom (can be negative or positive)
                 this.element = this.createElement();
             }
 
@@ -2782,12 +3002,39 @@
                 const grass = document.createElement('div');
                 grass.className = 'seagrass fade-in';
                 grass.style.left = this.x + 'px';
-                grass.style.bottom = '0px';
-                grass.innerHTML = `
-                    <div class="seagrass-blade"></div>
-                    <div class="seagrass-blade"></div>
-                    <div class="seagrass-blade"></div>
-                `;
+                grass.style.bottom = this.yOffset + 'px';
+                
+                // Random overall height for the patch (40-70px)
+                const patchHeight = 40 + Math.random() * 30;
+                grass.style.height = patchHeight + 'px';
+                
+                // Create 2-4 random blades (fewer blades for more scattered look)
+                const bladeCount = 2 + Math.floor(Math.random() * 3);
+                let bladesHTML = '';
+                
+                for (let i = 0; i < bladeCount; i++) {
+                    const randomHeight = 50 + Math.random() * 50; // 50-100% of patch height
+                    const randomLeft = -10 + Math.random() * 20; // -10px to 10px offset
+                    const randomWidth = 4 + Math.random() * 4; // 4-8px width
+                    const randomOpacity = 0.6 + Math.random() * 0.4; // 0.6-1.0 opacity
+                    const randomRotate = -12 + Math.random() * 24; // -12 to 12 degrees
+                    const swayDuration = 2.5 + Math.random() * 3; // 2.5-5.5 seconds
+                    const swayDelay = Math.random() * 3; // 0-3 seconds delay
+                    
+                    bladesHTML += `
+                        <div class="seagrass-blade" style="
+                            left: ${randomLeft}px;
+                            height: ${randomHeight}%;
+                            width: ${randomWidth}px;
+                            opacity: ${randomOpacity};
+                            transform: rotate(${randomRotate}deg);
+                            animation: seagrassSway ${swayDuration}s ease-in-out infinite;
+                            animation-delay: ${swayDelay}s;
+                        "></div>
+                    `;
+                }
+                
+                grass.innerHTML = bladesHTML;
                 document.getElementById('game-container').appendChild(grass);
                 return grass;
             }
@@ -2862,6 +3109,15 @@
             
             const island = new Island(gameState.nextIslandId++, x, y, size);
             gameState.islands.push(island);
+            
+            // Spawn fewer seagrass patches with more spacing
+            const grassCount = size === 'small' ? 2 : (size === 'medium' ? 3 : 4);
+            for (let i = 0; i < grassCount; i++) {
+                setTimeout(() => {
+                    addSeagrass(island);
+                }, i * 300); // Increased delay for more natural appearance
+            }
+            
             updateHUD(true);
             logEvent(`${size.charAt(0).toUpperCase() + size.slice(1)} Island #${island.id} appeared! 🏝️`);
         }
@@ -2878,7 +3134,12 @@
 
         function addKelp() {
             const container = document.getElementById('game-container');
-            const x = Math.random() * (container.clientWidth - 50);
+            // Only spawn in water area (below ocean top)
+            const oceanTop = container.clientHeight * 0.4;
+            const waterWidth = container.clientWidth;
+            
+            // Random x position across the water
+            const x = Math.random() * (waterWidth - 20);
             
             const kelp = new Kelp(gameState.nextKelpId++, x, 0);
             gameState.kelp.push(kelp);
@@ -2927,9 +3188,9 @@
         function addFood() {
             const container = document.getElementById('game-container');
             const x = Math.random() * (container.clientWidth - 50);
-            const y = Math.random() * (container.clientHeight * 0.5);
+            const y = 50; // Start from top of screen
             
-            const food = new Food(gameState.nextFoodId++, x, y);
+            const food = new Food(gameState.nextFoodId++, x, y, true); // shouldFall = true
             gameState.food.push(food);
             updateHUD(true);
         }
@@ -2943,8 +3204,8 @@
             }
         }
 
-        function addFoodAt(x, y) {
-            const food = new Food(gameState.nextFoodId++, x, y);
+        function addFoodAt(x, y, shouldFall = false) {
+            const food = new Food(gameState.nextFoodId++, x, y, shouldFall);
             gameState.food.push(food);
             updateHUD(true);
         }
@@ -2996,11 +3257,38 @@
             }
         }
 
-        function addSeagrass() {
+        function addSeagrass(nearIsland = null) {
             const container = document.getElementById('game-container');
-            const x = Math.random() * (container.clientWidth - 50);
+            let x, y;
             
-            const grass = new Seagrass(gameState.nextSeagrassId++, x, 0);
+            if (nearIsland && gameState.islands.length > 0) {
+                // Grow seagrass around a specific island or random island
+                const island = nearIsland || gameState.islands[Math.floor(Math.random() * gameState.islands.length)];
+                const centerOffset = island.size === 'small' ? 45 : (island.size === 'medium' ? 70 : 90);
+                const baseRadius = island.size === 'small' ? 50 : (island.size === 'medium' ? 80 : 110);
+                
+                // Much more random angle (full circle)
+                const angle = Math.random() * Math.PI * 2;
+                
+                // Very wide distance range for natural scattered look
+                const minDistance = baseRadius + 20;
+                const maxDistance = baseRadius + 120;
+                const distance = minDistance + Math.random() * (maxDistance - minDistance);
+                
+                x = island.x + centerOffset + Math.cos(angle) * distance;
+                
+                // Vary the bottom offset more for scattered depth appearance
+                y = Math.floor((Math.random() - 0.5) * 30);
+                
+                // Clamp to screen bounds
+                x = Math.max(10, Math.min(x, container.clientWidth - 20));
+            } else {
+                // Random position across the water
+                x = Math.random() * (container.clientWidth - 20);
+                y = Math.floor((Math.random() - 0.5) * 30);
+            }
+            
+            const grass = new Seagrass(gameState.nextSeagrassId++, x, y);
             gameState.seagrass.push(grass);
         }
 
@@ -3042,6 +3330,11 @@
             const btn = event.target;
             btn.textContent = gameState.isPaused ? '▶️ Resume' : '⏸️ Pause';
             logEvent(gameState.isPaused ? 'Game paused' : 'Game resumed');
+        }
+
+        function toggleHUD() {
+            const hud = document.getElementById('hud');
+            hud.classList.toggle('collapsed');
         }
 
         function toggleLog() {
@@ -3221,9 +3514,11 @@
                 }
 
                 seagrassSpawnTimer += deltaTime;
-                if (seagrassSpawnTimer >= 15 && gameState.seagrass.length < 12) {
+                if (seagrassSpawnTimer >= 20 && gameState.seagrass.length < 25) {
                     seagrassSpawnTimer = 0;
-                    addSeagrass();
+                    // 70% chance to spawn around islands, 30% random
+                    const spawnAroundIsland = gameState.islands.length > 0 && Math.random() < 0.7;
+                    addSeagrass(spawnAroundIsland);
                 }
 
                 kelpSpawnTimer += deltaTime;
@@ -3247,9 +3542,11 @@
             logEvent('🌊 Welcome to Sea of Ducks - OPTIMIZED!');
             logEvent('✨ CSS grass replaces emoji for better performance');
             logEvent('⚡ Throttled updates and optimized loops');
+            logEvent('🌿 Seagrass grows naturally around islands!');
+            logEvent('🦐 Shrimp fall naturally and swim in water!');
+            logEvent('📊 Click "Sea of Ducks" to collapse/expand stats');
             logEvent('🦆 Ducks have lifespans and breed');
             logEvent('🐕🐈 Predators hunt and reproduce');
-            logEvent('🌿 Biodiversity tracking');
             
             addDuck();
             addDuck();
@@ -3280,9 +3577,7 @@
                 addKelp();
             }
             
-            for (let i = 0; i < 6; i++) {
-                addSeagrass();
-            }
+            // Seagrass will automatically spawn around islands
             
             for (let i = 0; i < 3; i++) {
                 addAlgae('healthy');
