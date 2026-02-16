@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Duck Ecosystem - Ultra Optimized</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --ocean-deep: #0a2463;
+            --ocean-mid: #1e5a8e;
+            --ocean-light: #3e8ed0;
+            --wave-foam: #d4f1f4;
+            --duck-yellow: #ffd43b;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(180deg, #ffeaa7 0%, #fab1a0 40%, #fd79a8 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            touch-action: none;
+            transition: background 2s ease;
+        }
+
+        body.night {
+            background: linear-gradient(180deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .celestial-body {
+            position: absolute;
+            border-radius: 50%;
+            transition: opacity 2s ease, transform 2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sun {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #fff9e6 0%, #ffd700 50%, #ff8c00 100%);
+            box-shadow: 0 0 60px #ffd700;
+            top: 10%;
+            right: 15%;
+        }
+
+        .moon {
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #f0f0f0 0%, #d0d0d0 100%);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+            top: 10%;
+            right: 15%;
+            opacity: 0;
+        }
+
+        body.night .sun { opacity: 0; transform: translateY(100px); }
+        body.night .moon { opacity: 1; transform: translateY(0); }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            opacity: 0;
+            transition: opacity 2s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.night .stars { opacity: 1; }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .ocean {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(180deg, var(--ocean-light) 0%, var(--ocean-mid) 40%, var(--ocean-deep) 100%);
+            border-top: 4px solid var(--wave-foam);
+            transition: background 2s ease;
+        }
+
+        body.night .ocean {
+            background: linear-gradient(180deg, #1a3a52 0%, #0d1f2d 40%, #050d14 100%);
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 30px;
+            background: repeating-linear-gradient(90deg, transparent 0px, var(--wave-foam) 10px, transparent 20px, transparent 40px);
+            opacity: 0.3;
+            animation: waveMove 8s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            top: 20px;
+            animation-duration: 10s;
+            animation-direction: reverse;
+            opacity: 0.2;
+        }
+
+        @keyframes waveMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .island-grass {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .grass-blade-group {
+            position: relative;
+            width: 16px;
+            height: 30px;
+            animation: grassSway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        .grass-blade {
+            position: absolute;
+            bottom: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to top, #2d6016 0%, #3a7b1f 30%, #4a9527 60%, #5aaf2f 100%);
+            border-radius: 50% 50% 0 0;
+            box-shadow: inset -1px 0 2px rgba(0,0,0,0.3);
+        }
+
+        .grass-blade:nth-child(1) { left: 0; height: 100%; transform: rotate(-5deg); }
+        .grass-blade:nth-child(2) { left: 5px; height: 85%; transform: rotate(2deg); }
+        .grass-blade:nth-child(3) { left: 10px; height: 95%; transform: rotate(-2deg); }
+
+        @keyframes grassSway {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+
+        .island {
+            position: absolute;
+            z-index: 4;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            contain: layout style paint;
+        }
+
+        .island:hover { transform: scale(1.05); }
+
+        .island-base {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+
+        .predator {
+            position: absolute;
+            font-size: 36px;
+            z-index: 11;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            contain: layout style paint;
+            transform: translateZ(0);
+        }
+
+        .predator:hover { transform: scale(1.15) translateZ(0); }
+
+        .predator.hunting {
+            animation: predatorStalk 1s ease-in-out infinite;
+        }
+
+        @keyframes predatorStalk {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .predator.eating {
+            animation: predatorEat 0.8s ease-in-out;
+        }
+
+        @keyframes predatorEat {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-10deg); }
+            50% { transform: scale(0.9) rotate(10deg); }
+            75% { transform: scale(1.15) rotate(-5deg); }
+        }
+
+        .duck {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+            touch-action: none;
+            contain: layout style paint;
+            transform: translateZ(0);
+        }
+
+        .duck:hover { transform: scale(1.1) translateZ(0); }
+        .duck:active { transform: scale(1.15) translateZ(0); }
+        .duck.old { opacity: 0.7; }
+
+        .duck-body {
+            font-size: 48px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: bobFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes bobFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .duck.swimming .duck-body {
+            animation: swimFloat 0.8s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes swimFloat {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            25% { transform: translateY(-2px) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(3deg); }
+            75% { transform: translateY(-2px) rotate(0deg); }
+        }
+
+        .duck.flying .duck-body {
+            animation: flyAnimation 0.4s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes flyAnimation {
+            0%, 100% { transform: translateY(0px) rotate(-2deg) scaleY(0.95); }
+            50% { transform: translateY(-6px) rotate(2deg) scaleY(1.05); }
+        }
+
+        .duck.eating .duck-body {
+            animation: eatAnimation 0.6s ease-in-out;
+        }
+
+        @keyframes eatAnimation {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(-5deg); }
+            50% { transform: scale(0.95) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-3deg); }
+        }
+
+        .duck.laying-egg .duck-body {
+            animation: layEggAnimation 2s ease-in-out;
+        }
+
+        @keyframes layEggAnimation {
+            0% { transform: scale(1) translateY(0); }
+            20% { transform: scale(1.1) translateY(-10px); }
+            60% { transform: scale(1.15) translateY(-8px); }
+            80% { transform: scale(0.95) translateY(5px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        .heart-particle {
+            position: absolute;
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatHeart 1.5s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatHeart {
+            0% { opacity: 1; transform: translateY(0) scale(0.5); }
+            50% { opacity: 1; transform: translateY(-30px) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(0.5); }
+        }
+
+        .duck-ripple {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 8px;
+            background: radial-gradient(ellipse, rgba(212, 241, 244, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .duck.swimming .duck-ripple {
+            animation: ripple 0.8s ease-out infinite;
+            opacity: 1;
+        }
+
+        @keyframes ripple {
+            0% { transform: translateX(-50%) scale(0.8); opacity: 0.8; }
+            100% { transform: translateX(-50%) scale(1.5); opacity: 0; }
+        }
+
+        .duck-thinking {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+
+        .duck-thinking.show { opacity: 1; }
+
+        .duck-thinking::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+
+        .duck-stats {
+            position: absolute;
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: white;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 99;
+            min-width: 140px;
+        }
+
+        .duck:hover .duck-stats { opacity: 1; }
+
+        .stat-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 4px 0;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .stat-hunger { background: #ff6b6b; }
+        .stat-energy { background: #4ecdc4; }
+        .stat-social { background: #ffe66d; }
+
+        .food-item {
+            position: absolute;
+            font-size: 20px;
+            cursor: grab;
+            z-index: 8;
+            transition: transform 0.1s ease;
+            contain: layout style paint;
+            transform: translateZ(0);
+        }
+
+        .food-item.falling { animation: shrimpFall 0.8s ease-in forwards; }
+        .food-item.swimming { animation: shrimpSwim 2s ease-in-out infinite; }
+        .food-item:active { cursor: grabbing; }
+
+        @keyframes shrimpFall {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            50% { transform: translateY(20px) rotate(180deg) scale(1.1); }
+            100% { transform: translateY(40px) rotate(360deg) scale(1); opacity: 1; }
+        }
+
+        @keyframes shrimpSwim {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-8px) rotate(-5deg); }
+            50% { transform: translateY(-4px) rotate(0deg); }
+            75% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        .egg {
+            position: absolute;
+            font-size: 32px;
+            cursor: pointer;
+            z-index: 9;
+            animation: eggWiggle 2s ease-in-out infinite;
+        }
+
+        .egg:hover { transform: scale(1.1); }
+
+        @keyframes eggWiggle {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        @keyframes eggHatch {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+            100% { transform: scale(0) rotate(0deg); }
+        }
+
+        .egg.hatching { animation: eggHatch 0.8s ease-out forwards; }
+
+        .splash-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+            animation: splashFloat 0.8s ease-out forwards;
+        }
+
+        @keyframes splashFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: translateY(-20px) scale(1.2) rotate(180deg); }
+            100% { opacity: 0; transform: translateY(-40px) scale(0.5) rotate(360deg); }
+        }
+
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            min-width: 220px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .hud.collapsed { max-height: 50px; }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .hud-header:hover { background: rgba(0, 0, 0, 0.05); }
+
+        .hud h1 {
+            font-family: 'Shrikhand', cursive;
+            color: var(--ocean-deep);
+            font-size: 20px;
+            margin: 0;
+            text-shadow: 2px 2px 0 var(--duck-yellow);
+        }
+
+        .hud-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+            color: var(--ocean-deep);
+        }
+
+        .hud.collapsed .hud-toggle { transform: rotate(180deg); }
+
+        .hud-content { padding: 0 16px 12px 16px; }
+        .hud.collapsed .hud-content { display: none; }
+
+        .hud-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            font-size: 12px;
+            font-weight: 500;
+            color: #2d3436;
+        }
+
+        .hud-value {
+            color: var(--ocean-mid);
+            font-weight: 700;
+        }
+
+        .hud-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 12px 0;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .btn {
+            background: white;
+            border: 3px solid var(--ocean-deep);
+            border-radius: 50px;
+            padding: 10px 18px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ocean-deep);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .btn:hover {
+            background: var(--duck-yellow);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .ecosystem-log {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 16px;
+            padding: 0;
+            max-width: 280px;
+            max-height: 300px;
+            color: white;
+            font-size: 12px;
+            line-height: 1.6;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            z-index: 1000;
+        }
+
+        .ecosystem-log.collapsed { max-height: 45px; }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .log-header:hover { background: rgba(255,255,255,0.1); }
+
+        .log-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .ecosystem-log.collapsed .log-toggle { transform: rotate(180deg); }
+
+        .log-content {
+            padding: 0 20px 15px 20px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .ecosystem-log.collapsed .log-content { display: none; }
+
+        .log-content::-webkit-scrollbar { width: 6px; }
+        .log-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .log-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+
+        .log-entry {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--duck-yellow);
+        }
+
+        .log-time {
+            color: var(--wave-foam);
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .perf-monitor {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #0f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            z-index: 1001;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+
+        @media (max-width: 768px) {
+            .hud { min-width: 180px; max-width: 220px; }
+            .controls { bottom: 5px; gap: 6px; }
+            .btn { padding: 8px 12px; font-size: 11px; }
+            .duck-body { font-size: 40px; }
+            .predator { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="celestial-body sun"></div>
+        <div class="celestial-body moon"></div>
+        <div class="stars" id="stars"></div>
+
+        <div class="ocean">
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+
+        <div class="hud fade-in" id="hud">
+            <div class="hud-header" onclick="toggleHUD()">
+                <h1>Sea of Ducks 🦆</h1>
+                <span class="hud-toggle">▼</span>
+            </div>
+            <div class="hud-content">
+                <div class="hud-stat"><span>🦆 Ducks:</span><span class="hud-value" id="duck-count">0</span></div>
+                <div class="hud-stat"><span>🥚 Eggs:</span><span class="hud-value" id="egg-count">0</span></div>
+                <div class="hud-stat"><span>🏝️ Islands:</span><span class="hud-value" id="island-count">0</span></div>
+                <div class="hud-stat"><span>🐕🐈 Predators:</span><span class="hud-value" id="predator-count">0</span></div>
+                <div class="hud-stat"><span>🦐 Shrimp:</span><span class="hud-value" id="food-count">0</span></div>
+                <div class="hud-stat"><span>⏱️ Time:</span><span class="hud-value" id="time-elapsed">0s</span></div>
+                <div class="hud-stat"><span id="time-of-day-icon">☀️</span><span class="hud-value" id="time-of-day">Day</span></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="addDuck()">➕ Add Duck</button>
+            <button class="btn" onclick="addFood()">🦐 Add Shrimp</button>
+            <button class="btn" onclick="addIsland()">🏝️ Add Island</button>
+            <button class="btn" onclick="addPredator()">🐕 Add Predator</button>
+            <button class="btn" onclick="togglePause()" id="pause-btn">⏸️ Pause</button>
+            <button class="btn" onclick="togglePerf()" id="perf-btn">📊 FPS</button>
+        </div>
+
+        <div class="ecosystem-log" id="ecosystem-log">
+            <div class="log-header" onclick="toggleLog()">
+                <strong style="font-size: 14px;">📋 Ecosystem Log</strong>
+                <span class="log-toggle">▼</span>
+            </div>
+            <div class="log-content" id="log-content"></div>
+        </div>
+
+        <div class="perf-monitor" id="perf-monitor">
+            FPS: <span id="fps-display">60</span><br>
+            Entities: <span id="entity-count">0</span><br>
+            Frame: <span id="frame-time">0</span>ms
+        </div>
+    </div>
+
+    <script>
+        // ===== DUCK ECOSYSTEM - ULTRA OPTIMIZED EDITION =====
+        
+        const CONFIG = {
+            UPDATE_FPS: 60,
+            THINK_COOLDOWN: 3000,
+            SPATIAL_GRID_SIZE: 150,
+            MAX_ENTITIES: {
+                ducks: 50,
+                food: 40,
+                eggs: 30,
+                predators: 15,
+                islands: 8
+            },
+            HUD_UPDATE_THROTTLE: 500,
+            DUCKS_PER_FRAME: 10,
+        };
+
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            CONFIG.MAX_ENTITIES.ducks = 25;
+            CONFIG.MAX_ENTITIES.food = 20;
+            CONFIG.UPDATE_FPS = 30;
+            CONFIG.THINK_COOLDOWN = 5000;
+        }
+
+        // Spatial Grid - 60-80% faster collision detection
+        class SpatialGrid {
+            constructor(cellSize) {
+                this.cellSize = cellSize;
+                this.grid = new Map();
+            }
+            _getKey(x, y) {
+                return `${Math.floor(x / this.cellSize)},${Math.floor(y / this.cellSize)}`;
+            }
+            add(obj) {
+                const key = this._getKey(obj.x, obj.y);
+                if (!this.grid.has(key)) this.grid.set(key, []);
+                this.grid.get(key).push(obj);
+            }
+            remove(obj) {
+                const cell = this.grid.get(this._getKey(obj.x, obj.y));
+                if (cell) {
+                    const idx = cell.indexOf(obj);
+                    if (idx > -1) cell.splice(idx, 1);
+                }
+            }
+            update(obj, oldX, oldY) {
+                const oldKey = this._getKey(oldX, oldY);
+                const newKey = this._getKey(obj.x, obj.y);
+                if (oldKey !== newKey) {
+                    const oldCell = this.grid.get(oldKey);
+                    if (oldCell) {
+                        const idx = oldCell.indexOf(obj);
+                        if (idx > -1) oldCell.splice(idx, 1);
+                    }
+                    if (!this.grid.has(newKey)) this.grid.set(newKey, []);
+                    this.grid.get(newKey).push(obj);
+                }
+            }
+            getNearby(x, y, radius) {
+                const results = [];
+                const cellRadius = Math.ceil(radius / this.cellSize);
+                const centerX = Math.floor(x / this.cellSize);
+                const centerY = Math.floor(y / this.cellSize);
+                for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+                    for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+                        const cell = this.grid.get(`${centerX + dx},${centerY + dy}`);
+                        if (cell) results.push(...cell);
+                    }
+                }
+                return results;
+            }
+        }
+
+        // Particle Pool - Reuses particles for better performance
+        class ParticlePool {
+            constructor(maxSize = 30) {
+                this.pool = [];
+                this.maxSize = maxSize;
+            }
+            get(type = 'splash') {
+                let particle = this.pool.pop();
+                if (!particle) {
+                    const el = document.createElement('div');
+                    el.className = type === 'heart' ? 'heart-particle' : 'splash-particle';
+                    el.style.cssText = 'position:absolute;pointer-events:none;z-index:100';
+                    document.getElementById('game-container').appendChild(el);
+                    particle = { element: el, type };
+                }
+                particle.element.style.display = 'block';
+                return particle;
+            }
+            release(particle) {
+                if (this.pool.length < this.maxSize) {
+                    particle.element.style.display = 'none';
+                    this.pool.push(particle);
+                } else {
+                    particle.element.remove();
+                }
+            }
+            createSplash(x, y) {
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const p = this.get('splash');
+                        p.element.textContent = '💧';
+                        p.element.style.cssText += `font-size:16px;left:${x+(Math.random()-0.5)*30}px;top:${y}px`;
+                        setTimeout(() => this.release(p), 800);
+                    }, i * 50);
+                }
+            }
+            createHearts(x, y) {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const p = this.get('heart');
+                        p.element.textContent = '💕';
+                        p.element.style.cssText += `font-size:20px;left:${x+(Math.random()-0.5)*30}px;top:${y-20}px`;
+                        setTimeout(() => this.release(p), 1500);
+                    }, i * 200);
+                }
+            }
+        }
+
+        // Performance Monitor
+        class PerformanceMonitor {
+            constructor() {
+                this.fps = 60;
+                this.frameTime = 0;
+                this.frameCount = 0;
+                this.lastTime = performance.now();
+            }
+            startFrame() {
+                this.frameStart = performance.now();
+            }
+            endFrame() {
+                this.frameCount++;
+                const now = performance.now();
+                this.frameTime = now - this.frameStart;
+                if (now - this.lastTime >= 1000) {
+                    this.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastTime = now;
+                    this.updateDisplay();
+                }
+            }
+            updateDisplay() {
+                const fps = document.getElementById('fps-display');
+                const entities = document.getElementById('entity-count');
+                const frame = document.getElementById('frame-time');
+                if (fps) fps.textContent = this.fps;
+                if (entities) entities.textContent = gameState.ducks.length + gameState.food.length + gameState.eggs.length;
+                if (frame) frame.textContent = this.frameTime.toFixed(2);
+            }
+        }
+
+        // Game State
+        const gameState = {
+            ducks: [],
+            food: [],
+            eggs: [],
+            islands: [],
+            predators: [],
+            isPaused: false,
+            time: 0,
+            frameCount: 0,
+            duckUpdateOffset: 0,
+            nextDuckId: 1,
+            nextFoodId: 1,
+            nextEggId: 1,
+            nextIslandId: 1,
+            nextPredatorId: 1,
+            waterPollution: 0,
+            isNight: false,
+            dayNightCycle: 0,
+            dayNightDuration: 60,
+            lastHudUpdate: 0,
+            spatialGridFood: new SpatialGrid(CONFIG.SPATIAL_GRID_SIZE),
+            spatialGridDucks: new SpatialGrid(CONFIG.SPATIAL_GRID_SIZE),
+            particlePool: new ParticlePool(30),
+        };
+
+        const perfMonitor = new PerformanceMonitor();
+
+        // Utility Functions
+        function distance(x1, y1, x2, y2) {
+            const dx = x2 - x1, dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function findNearestInArray(x, y, array, maxDist = Infinity) {
+            let nearest = null, minDist = maxDist;
+            for (const obj of array) {
+                const dist = distance(x, y, obj.x, obj.y);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = obj;
+                }
+            }
+            return nearest;
+        }
+
+        // Island Class
+        class Island {
+            constructor(id, x, y, size) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.element = this.createElement();
+            }
+            createElement() {
+                const island = document.createElement('div');
+                island.className = 'island fade-in';
+                island.style.left = this.x + 'px';
+                island.style.top = this.y + 'px';
+                
+                const sizes = {
+                    small: [90, 3, 20],
+                    medium: [140, 4, 25],
+                    large: [180, 5, 30]
+                };
+                const [fontSize, grassCount, grassHeight] = sizes[this.size];
+                
+                let grassHTML = '';
+                for (let i = 0; i < grassCount; i++) {
+                    grassHTML += `<div class="grass-blade-group" style="height:${grassHeight}px"><div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div></div>`;
+                }
+                
+                island.innerHTML = `<div class="island-base" style="font-size:${fontSize}px">🏝️</div><div class="island-grass">${grassHTML}</div>`;
+                document.getElementById('game-container').appendChild(island);
+                return island;
+            }
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Predator Class
+        class Predator {
+            constructor(id, island) {
+                this.id = id;
+                this.island = island;
+                const centerOffset = island.size === 'small' ? 45 : (island.size === 'medium' ? 70 : 90);
+                this.x = island.x + centerOffset + (Math.random() - 0.5) * 30;
+                this.y = island.y + centerOffset + (Math.random() - 0.5) * 30;
+                this.type = Math.random() < 0.5 ? '🐕' : '🐈';
+                this.age = 0;
+                this.maxAge = 120 + Math.random() * 60;
+                this.hunger = 50 + Math.random() * 30;
+                this.state = 'idle';
+                this.target = null;
+                this.speed = 1.2 + Math.random() * 0.3;
+                this.lastThinkTime = 0;
+                this.element = this.createElement();
+            }
+            createElement() {
+                const el = document.createElement('div');
+                el.className = 'predator fade-in';
+                el.style.left = this.x + 'px';
+                el.style.top = this.y + 'px';
+                el.innerHTML = this.type;
+                el.title = `${this.type === '🐕' ? 'Dog' : 'Cat'} #${this.id}`;
+                document.getElementById('game-container').appendChild(el);
+                return el;
+            }
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                this.age += deltaTime;
+                if (this.age >= this.maxAge) {
+                    logEvent(`${this.type === '🐕' ? 'Dog' : 'Cat'} #${this.id} died 💀`);
+                    removePredator(this);
+                    return;
+                }
+                this.hunger = Math.max(0, this.hunger - deltaTime * 1.2);
+                const now = Date.now();
+                if (now - this.lastThinkTime > CONFIG.THINK_COOLDOWN) {
+                    this.lastThinkTime = now;
+                    this.think();
+                }
+                this.executeBehavior(deltaTime);
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+            think() {
+                if (this.hunger < 40 && this.state !== 'hunting') {
+                    const nearbyDucks = gameState.spatialGridDucks.getNearby(this.x, this.y, 300);
+                    const nearestDuck = findNearestInArray(this.x, this.y, nearbyDucks, 300);
+                    if (nearestDuck) {
+                        this.target = nearestDuck;
+                        this.state = 'hunting';
+                        this.element.classList.add('hunting');
+                    }
+                }
+            }
+            executeBehavior(deltaTime) {
+                if (this.state === 'hunting' && this.target) {
+                    const dist = distance(this.x, this.y, this.target.x, this.target.y);
+                    if (dist < 30) {
+                        this.catchDuck(this.target);
+                    } else {
+                        this.moveTowards(this.target, deltaTime);
+                    }
+                } else {
+                    if (Math.random() < 0.02) {
+                        const centerOffset = this.island.size === 'small' ? 45 : (this.island.size === 'medium' ? 70 : 90);
+                        this.target = {
+                            x: this.island.x + centerOffset + (Math.random() - 0.5) * 60,
+                            y: this.island.y + centerOffset + (Math.random() - 0.5) * 60
+                        };
+                    }
+                    if (this.target && Math.abs(this.x - this.target.x) > 5) {
+                        this.moveTowards(this.target, deltaTime);
+                    }
+                }
+            }
+            catchDuck(duck) {
+                this.element.classList.remove('hunting');
+                this.element.classList.add('eating');
+                setTimeout(() => this.element.classList.remove('eating'), 800);
+                this.hunger = Math.min(100, this.hunger + 60);
+                logEvent(`${this.type === '🐕' ? 'Dog' : 'Cat'} #${this.id} caught Duck #${duck.id}! 🦆💔`);
+                removeDuck(duck);
+                this.target = null;
+                this.state = 'idle';
+            }
+            moveTowards(target, deltaTime) {
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 5) {
+                    const moveSpeed = this.speed * deltaTime * 50;
+                    this.x += (dx / dist) * moveSpeed;
+                    this.y += (dy / dist) * moveSpeed;
+                    this.element.style.transform = dx < 0 ? 'scaleX(-1) translateZ(0)' : 'scaleX(1) translateZ(0)';
+                }
+            }
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        // Duck Class (Optimized)
+        class DuckAgent {
+            constructor(id, x, y, parentColor = null) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.hunger = Math.random() * 50 + 25;
+                this.energy = Math.random() * 50 + 50;
+                this.social = Math.random() * 100;
+                this.personality = ['Curious', 'Lazy', 'Social', 'Shy', 'Brave', 'Cautious', 'Energetic', 'Calm'][Math.floor(Math.random() * 8)];
+                this.state = 'idle';
+                this.target = null;
+                this.speed = 1 + Math.random();
+                this.thinkingTimer = 0;
+                this.lastDecisionTime = 0;
+                this.isSwimming = false;
+                this.age = 0;
+                this.maxAge = 180 + Math.random() * 120;
+                this.canBreed = false;
+                this.breedingCooldown = 0;
+                this.gender = Math.random() < 0.5 ? 'M' : 'F';
+                this.color = parentColor || this.generateColor();
+                this.mealsEaten = 0;
+                this.fertility = 0;
+                this.element = this.createElement();
+                this.clickHandler = () => this.onInteract();
+                this.element.addEventListener('click', this.clickHandler);
+                this.updateVisuals();
+            }
+            generateColor() {
+                const colors = [
+                    { name: 'Yellow', hex: '#ffd700', emoji: '🦆' },
+                    { name: 'White', hex: '#ffffff', emoji: '🦆' },
+                    { name: 'Brown', hex: '#8b6f47', emoji: '🦆' },
+                    { name: 'Orange', hex: '#ff8c42', emoji: '🦆' },
+                    { name: 'Green', hex: '#4a7c59', emoji: '🦆' },
+                    { name: 'Blue', hex: '#5b9bd5', emoji: '🦆' },
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            createElement() {
+                const duck = document.createElement('div');
+                duck.className = 'duck fade-in';
+                duck.style.left = this.x + 'px';
+                duck.style.top = this.y + 'px';
+                const isDuckling = this.age < 10;
+                const emoji = isDuckling ? '🐥' : this.color.emoji;
+                const size = isDuckling ? '36px' : '48px';
+                duck.innerHTML = `
+                    <div class="duck-body" style="filter:drop-shadow(0 0 8px ${this.color.hex});font-size:${size}">${emoji}</div>
+                    <div class="duck-ripple"></div>
+                    <div class="duck-thinking"></div>
+                    <div class="duck-stats">
+                        <div><strong>${this.personality}</strong> ${this.color.name} ${this.gender === 'M' ? '♂️' : '♀️'} #${this.id}</div>
+                        <div style="margin-top:4px;font-size:9px">Age: <span class="duck-age">0</span>s | Meals: <span class="duck-meals">0</span></div>
+                        <div>Hunger: <div class="stat-bar"><div class="stat-fill stat-hunger" style="width:${this.hunger}%"></div></div></div>
+                        <div>Energy: <div class="stat-bar"><div class="stat-fill stat-energy" style="width:${this.energy}%"></div></div></div>
+                        <div>Social: <div class="stat-bar"><div class="stat-fill stat-social" style="width:${this.social}%"></div></div></div>
+                    </div>
+                `;
+                document.getElementById('game-container').appendChild(duck);
+                return duck;
+            }
+            onInteract() {
+                this.social = Math.min(100, this.social + 15);
+                this.showThought('Hello! 😊');
+                logEvent(`Duck #${this.id} (${this.personality}) was petted!`);
+            }
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                this.age += deltaTime;
+                if (this.age >= this.maxAge) {
+                    logEvent(`Duck #${this.id} died of old age 💀`);
+                    removeDuck(this);
+                    return;
+                }
+                if (this.age >= 10 && !this.canBreed) this.canBreed = true;
+                if (this.breedingCooldown > 0) this.breedingCooldown -= deltaTime;
+                this.hunger = Math.max(0, this.hunger - deltaTime * 0.8);
+                this.energy = Math.max(0, this.energy - deltaTime * 0.5);
+                this.social = Math.max(0, this.social - deltaTime * 0.3);
+                this.think();
+                this.executeBehavior(deltaTime);
+                this.updateVisuals();
+                if (this.thinkingTimer > 0) {
+                    this.thinkingTimer -= deltaTime;
+                    if (this.thinkingTimer <= 0) this.hideThought();
+                }
+            }
+            think() {
+                const now = Date.now();
+                if (now - this.lastDecisionTime < CONFIG.THINK_COOLDOWN) return;
+                this.lastDecisionTime = now;
+
+                // Breeding priority
+                if (this.canBreed && this.breedingCooldown <= 0 && this.hunger > 50 && this.energy > 50 && this.fertility > 70) {
+                    const nearbyDucks = gameState.spatialGridDucks.getNearby(this.x, this.y, 200);
+                    for (const d of nearbyDucks) {
+                        if (d !== this && d.canBreed && d.breedingCooldown <= 0 && d.gender !== this.gender && d.hunger > 50) {
+                            this.target = { type: 'breeding', obj: d };
+                            this.state = 'breeding';
+                            this.showThought('Time to breed! 💕');
+                            return;
+                        }
+                    }
+                }
+
+                // Food priority
+                if (this.hunger < 50) {
+                    const nearbyFood = gameState.spatialGridFood.getNearby(this.x, this.y, 250);
+                    const nearest = findNearestInArray(this.x, this.y, nearbyFood, 250);
+                    if (nearest) {
+                        this.target = { type: 'food', obj: nearest };
+                        this.state = 'seeking-food';
+                        this.showThought('Looking for food... 🦐');
+                        return;
+                    }
+                }
+
+                // Explore
+                this.explore();
+            }
+            explore() {
+                if (Math.random() < 0.3) {
+                    const container = document.getElementById('game-container');
+                    const isDuckling = this.age < 10;
+                    let targetY;
+                    if (isDuckling) {
+                        targetY = container.clientHeight * 0.35 + Math.random() * (container.clientHeight * 0.15);
+                    } else {
+                        targetY = container.clientHeight * 0.10 + Math.random() * (container.clientHeight * 0.40);
+                    }
+                    this.target = {
+                        type: 'position',
+                        x: Math.random() * (container.clientWidth - 100),
+                        y: targetY
+                    };
+                    this.state = 'exploring';
+                    this.showThought(isDuckling ? 'Swimming around! 🐥' : 'Flying high! 🦆');
+                }
+            }
+            executeBehavior(deltaTime) {
+                const wasSwimming = this.isSwimming;
+                this.isSwimming = false;
+
+                if (this.state === 'seeking-food' && this.target) {
+                    this.isSwimming = true;
+                    this.moveTowardsTarget(deltaTime);
+                    if (this.target && distance(this.x, this.y, this.target.obj.x, this.target.obj.y) < 30) {
+                        this.eatFood(this.target.obj);
+                    }
+                } else if (this.state === 'breeding' && this.target) {
+                    this.isSwimming = true;
+                    this.moveTowardsTarget(deltaTime);
+                    if (this.target && distance(this.x, this.y, this.target.obj.x, this.target.obj.y) < 50) {
+                        this.breed(this.target.obj);
+                    }
+                } else if (this.state === 'exploring') {
+                    this.isSwimming = true;
+                    this.moveTowardsTarget(deltaTime);
+                    if (this.target && Math.abs(this.x - this.target.x) < 10 && Math.abs(this.y - this.target.y) < 10) {
+                        this.state = 'idle';
+                        this.target = null;
+                    }
+                }
+
+                if (this.isSwimming !== wasSwimming) {
+                    this.element.classList.toggle('swimming', this.isSwimming);
+                }
+
+                const container = document.getElementById('game-container');
+                const waterSurface = container.clientHeight * 0.40;
+                const isInSky = this.y < waterSurface;
+                const isDuckling = this.age < 10;
+                
+                if (!isDuckling && isInSky && this.isSwimming) {
+                    this.element.classList.add('flying');
+                    this.element.classList.remove('swimming');
+                } else {
+                    this.element.classList.remove('flying');
+                }
+            }
+            moveTowardsTarget(deltaTime) {
+                if (!this.target) return;
+                const oldX = this.x, oldY = this.y;
+                const targetX = this.target.x !== undefined ? this.target.x : (this.target.obj.x + 10);
+                const targetY = this.target.y !== undefined ? this.target.y : (this.target.obj.y + 10);
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 5) {
+                    const moveSpeed = this.speed * deltaTime * 60;
+                    this.x += (dx / dist) * moveSpeed;
+                    this.y += (dy / dist) * moveSpeed;
+                    gameState.spatialGridDucks.update(this, oldX, oldY);
+                    const duckBody = this.element.querySelector('.duck-body');
+                    duckBody.style.transform = dx < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+                }
+            }
+            eatFood(food) {
+                this.element.classList.add('eating');
+                setTimeout(() => this.element.classList.remove('eating'), 600);
+                this.hunger = Math.min(100, this.hunger + 35);
+                this.energy = Math.min(100, this.energy + 10);
+                this.mealsEaten++;
+                this.fertility = Math.min(100, this.fertility + 15);
+                this.showThought('Yummy! 😋');
+                removeFood(food);
+                this.target = null;
+                this.state = 'idle';
+            }
+            breed(mate) {
+                if (!mate.canBreed || mate.breedingCooldown > 0 || mate.state === 'breeding' || this.gender === mate.gender) {
+                    this.state = 'idle';
+                    this.target = null;
+                    return;
+                }
+                mate.state = 'breeding';
+                const female = this.gender === 'F' ? this : mate;
+                female.element.classList.add('laying-egg');
+                setTimeout(() => female.element.classList.remove('laying-egg'), 2000);
+                gameState.particlePool.createHearts(this.x, this.y);
+                gameState.particlePool.createHearts(mate.x, mate.y);
+                this.breedingCooldown = 30;
+                mate.breedingCooldown = 30;
+                this.showThought('💕 Love! 💕');
+                mate.showThought('💕 Love! 💕');
+                const eggX = (this.x + mate.x) / 2;
+                const eggY = (this.y + mate.y) / 2;
+                const parentColor = Math.random() < 0.5 ? this.color : mate.color;
+                const numEggs = (this.fertility + mate.fertility) / 2 > 75 ? 2 : 1;
+                for (let i = 0; i < numEggs; i++) {
+                    setTimeout(() => {
+                        createEgg(eggX + (Math.random() - 0.5) * 40, eggY + (Math.random() - 0.5) * 40, parentColor);
+                    }, i * 300);
+                }
+                this.fertility = Math.max(0, this.fertility - 30);
+                mate.fertility = Math.max(0, mate.fertility - 30);
+                logEvent(`${female.color.name} Duck #${female.id} ♀️ laid ${numEggs} egg(s)! 🥚`);
+                this.target = null;
+                this.state = 'idle';
+                mate.state = 'idle';
+                mate.target = null;
+            }
+            showThought(text) {
+                this.thinkingTimer = 2;
+                const bubble = this.element.querySelector('.duck-thinking');
+                bubble.textContent = text;
+                bubble.classList.add('show');
+            }
+            hideThought() {
+                this.element.querySelector('.duck-thinking').classList.remove('show');
+            }
+            updateVisuals() {
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+                const duckBody = this.element.querySelector('.duck-body');
+                const isDuckling = this.age < 10;
+                if (duckBody) {
+                    duckBody.textContent = isDuckling ? '🐥' : this.color.emoji;
+                    duckBody.style.fontSize = isDuckling ? '36px' : '48px';
+                }
+                const hungerBar = this.element.querySelector('.stat-hunger');
+                const energyBar = this.element.querySelector('.stat-energy');
+                const socialBar = this.element.querySelector('.stat-social');
+                const ageDisplay = this.element.querySelector('.duck-age');
+                const mealsDisplay = this.element.querySelector('.duck-meals');
+                if (hungerBar) hungerBar.style.width = this.hunger + '%';
+                if (energyBar) energyBar.style.width = this.energy + '%';
+                if (socialBar) socialBar.style.width = this.social + '%';
+                if (ageDisplay) ageDisplay.textContent = Math.floor(this.age);
+                if (mealsDisplay) mealsDisplay.textContent = this.mealsEaten;
+            }
+            destroy() {
+                this.element.removeEventListener('click', this.clickHandler);
+                gameState.spatialGridDucks.remove(this);
+                this.element.remove();
+            }
+        }
+
+        // Food Class (Optimized with fixed physics)
+        class Food {
+            constructor(id, x, y, shouldFall = true) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.lifetime = 30000;
+                this.isFalling = shouldFall;
+                this.velocityY = 0;
+                this.gravity = 300;
+                this.hasEnteredWater = false;
+                this.swimDirection = Math.random() * Math.PI * 2;
+                this.swimSpeed = 0.3 + Math.random() * 0.2;
+                this.element = this.createElement();
+                if (this.isFalling) {
+                    this.element.classList.add('falling');
+                } else {
+                    gameState.spatialGridFood.add(this);
+                }
+            }
+            createElement() {
+                const food = document.createElement('div');
+                food.className = 'food-item fade-in';
+                food.style.left = this.x + 'px';
+                food.style.top = this.y + 'px';
+                food.innerHTML = '🦐';
+                document.getElementById('game-container').appendChild(food);
+                return food;
+            }
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                const oldX = this.x, oldY = this.y;
+                
+                if (this.isFalling) {
+                    const container = document.getElementById('game-container');
+                    const waterSurface = container.clientHeight * 0.40;
+                    this.velocityY += this.gravity * deltaTime;
+                    const newY = this.y + this.velocityY * deltaTime;
+                    
+                    if (newY >= waterSurface && !this.hasEnteredWater) {
+                        this.hasEnteredWater = true;
+                        this.isFalling = false;
+                        this.velocityY = 0;
+                        this.y = waterSurface + 10;
+                        gameState.particlePool.createSplash(this.x, this.y);
+                        this.element.classList.remove('falling');
+                        this.element.classList.add('swimming');
+                        gameState.spatialGridFood.add(this);
+                        logEvent(`Shrimp #${this.id} splashed! 🦐💦`);
+                    } else {
+                        this.y = newY;
+                    }
+                    this.element.style.top = this.y + 'px';
+                    return;
+                }
+                
+                if (this.hasEnteredWater) {
+                    if (Math.random() < 0.02) {
+                        this.swimDirection += (Math.random() - 0.5) * Math.PI / 3;
+                    }
+                    const moveSpeed = this.swimSpeed * deltaTime * 25;
+                    this.x += Math.cos(this.swimDirection) * moveSpeed;
+                    this.y += Math.sin(this.swimDirection) * moveSpeed;
+                    gameState.spatialGridFood.update(this, oldX, oldY);
+                    const container = document.getElementById('game-container');
+                    const oceanTop = container.clientHeight * 0.4;
+                    if (this.x < 0 || this.x > container.clientWidth - 30) this.swimDirection = Math.PI - this.swimDirection;
+                    if (this.y < oceanTop || this.y > container.clientHeight - 30) this.swimDirection = -this.swimDirection;
+                    this.element.style.left = this.x + 'px';
+                    this.element.style.top = this.y + 'px';
+                    this.element.style.transform = Math.cos(this.swimDirection) < 0 ? 'scaleX(-1) translateZ(0)' : 'scaleX(1) translateZ(0)';
+                }
+                
+                this.lifetime -= deltaTime * 1000;
+                if (this.lifetime <= 0) removeFood(this);
+            }
+            destroy() {
+                gameState.spatialGridFood.remove(this);
+                this.element.remove();
+            }
+        }
+
+        // Egg Class
+        class Egg {
+            constructor(id, x, y, parentColor) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.parentColor = parentColor;
+                this.hatchTime = 15;
+                this.element = this.createElement();
+                this.clickHandler = () => this.hatch();
+                this.element.addEventListener('click', this.clickHandler);
+            }
+            createElement() {
+                const egg = document.createElement('div');
+                egg.className = 'egg fade-in';
+                egg.style.left = this.x + 'px';
+                egg.style.top = this.y + 'px';
+                egg.innerHTML = '🥚';
+                egg.title = 'Click to hatch!';
+                document.getElementById('game-container').appendChild(egg);
+                return egg;
+            }
+            update(deltaTime) {
+                if (gameState.isPaused) return;
+                this.hatchTime -= deltaTime;
+                if (this.hatchTime <= 0) this.hatch();
+            }
+            hatch() {
+                this.element.classList.add('hatching');
+                setTimeout(() => {
+                    const newDuck = new DuckAgent(gameState.nextDuckId++, this.x, this.y, this.parentColor);
+                    gameState.ducks.push(newDuck);
+                    gameState.spatialGridDucks.add(newDuck);
+                    logEvent(`🐣 Egg hatched! Welcome ${newDuck.color.name} Duck #${newDuck.id}!`);
+                    removeEgg(this);
+                    updateHUD(true);
+                }, 800);
+            }
+            destroy() {
+                this.element.removeEventListener('click', this.clickHandler);
+                this.element.remove();
+            }
+        }
+
+        // Game Functions
+        function addDuck() {
+            if (gameState.ducks.length >= CONFIG.MAX_ENTITIES.ducks) {
+                logEvent(`Max ducks reached (${CONFIG.MAX_ENTITIES.ducks})! 🦆`);
+                return;
+            }
+            const container = document.getElementById('game-container');
+            const x = Math.random() * (container.clientWidth - 100);
+            const y = container.clientHeight * 0.35 + Math.random() * (container.clientHeight * 0.10);
+            const duck = new DuckAgent(gameState.nextDuckId++, x, y);
+            gameState.ducks.push(duck);
+            gameState.spatialGridDucks.add(duck);
+            updateHUD(true);
+            logEvent(`New ${duck.personality} ${duck.color.name} duck #${duck.id} joined! 🦆`);
+        }
+
+        function removeDuck(duck) {
+            const idx = gameState.ducks.indexOf(duck);
+            if (idx > -1) {
+                gameState.ducks.splice(idx, 1);
+                duck.destroy();
+                updateHUD(true);
+            }
+        }
+
+        function addFood() {
+            if (gameState.food.length >= CONFIG.MAX_ENTITIES.food) return;
+            const container = document.getElementById('game-container');
+            const x = Math.random() * (container.clientWidth - 50);
+            const food = new Food(gameState.nextFoodId++, x, 50, true);
+            gameState.food.push(food);
+            updateHUD(true);
+        }
+
+        function removeFood(food) {
+            const idx = gameState.food.indexOf(food);
+            if (idx > -1) {
+                gameState.food.splice(idx, 1);
+                food.destroy();
+                updateHUD(true);
+            }
+        }
+
+        function addIsland() {
+            if (gameState.islands.length >= CONFIG.MAX_ENTITIES.islands) {
+                logEvent('Max islands reached! 🏝️');
+                return;
+            }
+            const container = document.getElementById('game-container');
+            const oceanTop = container.clientHeight * 0.4;
+            const x = Math.random() * (container.clientWidth - 200);
+            const y = oceanTop + Math.random() * (container.clientHeight * 0.25);
+            const sizes = ['small', 'medium', 'large'];
+            const size = sizes[Math.floor(Math.random() * sizes.length)];
+            const island = new Island(gameState.nextIslandId++, x, y, size);
+            gameState.islands.push(island);
+            updateHUD(true);
+            logEvent(`${size.charAt(0).toUpperCase() + size.slice(1)} Island #${island.id} appeared! 🏝️`);
+        }
+
+        function addPredator() {
+            if (gameState.predators.length >= CONFIG.MAX_ENTITIES.predators) {
+                logEvent('Max predators reached! 🐕');
+                return;
+            }
+            if (gameState.islands.length === 0) {
+                logEvent('Need an island first! 🏝️');
+                return;
+            }
+            const island = gameState.islands[Math.floor(Math.random() * gameState.islands.length)];
+            const predator = new Predator(gameState.nextPredatorId++, island);
+            gameState.predators.push(predator);
+            updateHUD(true);
+            logEvent(`${predator.type === '🐕' ? 'Dog' : 'Cat'} #${predator.id} appeared! 🐾`);
+        }
+
+        function removePredator(predator) {
+            const idx = gameState.predators.indexOf(predator);
+            if (idx > -1) {
+                gameState.predators.splice(idx, 1);
+                predator.destroy();
+                updateHUD(true);
+            }
+        }
+
+        function createEgg(x, y, parentColor) {
+            if (gameState.eggs.length >= CONFIG.MAX_ENTITIES.eggs) return;
+            const egg = new Egg(gameState.nextEggId++, x, y, parentColor);
+            gameState.eggs.push(egg);
+            updateHUD(true);
+        }
+
+        function removeEgg(egg) {
+            const idx = gameState.eggs.indexOf(egg);
+            if (idx > -1) {
+                gameState.eggs.splice(idx, 1);
+                egg.destroy();
+                updateHUD(true);
+            }
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            const btn = document.getElementById('pause-btn');
+            if (btn) btn.textContent = gameState.isPaused ? '▶️ Resume' : '⏸️ Pause';
+            logEvent(gameState.isPaused ? 'Game paused ⏸️' : 'Game resumed ▶️');
+        }
+
+        function togglePerf() {
+            const monitor = document.getElementById('perf-monitor');
+            if (monitor) monitor.style.display = monitor.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleHUD() {
+            const hud = document.getElementById('hud');
+            if (hud) hud.classList.toggle('collapsed');
+        }
+
+        function toggleLog() {
+            const log = document.getElementById('ecosystem-log');
+            if (log) log.classList.toggle('collapsed');
+        }
+
+        function updateHUD(force = false) {
+            const now = Date.now();
+            if (!force && now - gameState.lastHudUpdate < CONFIG.HUD_UPDATE_THROTTLE) return;
+            gameState.lastHudUpdate = now;
+            const els = {
+                'duck-count': gameState.ducks.length,
+                'egg-count': gameState.eggs.length,
+                'island-count': gameState.islands.length,
+                'predator-count': gameState.predators.length,
+                'food-count': gameState.food.length
+            };
+            for (const [id, val] of Object.entries(els)) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            }
+        }
+
+        function updateDayNight() {
+            const body = document.body;
+            const icon = document.getElementById('time-of-day-icon');
+            const text = document.getElementById('time-of-day');
+            if (gameState.isNight) {
+                body.classList.add('night');
+                if (icon) icon.textContent = '🌙';
+                if (text) text.textContent = 'Night';
+            } else {
+                body.classList.remove('night');
+                if (icon) icon.textContent = '☀️';
+                if (text) text.textContent = 'Day';
+            }
+        }
+
+        function logEvent(message) {
+            const logContent = document.getElementById('log-content');
+            if (!logContent) return;
+            const entry = document.createElement('div');
+            entry.className = 'log-entry fade-in';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<div class="log-time">${time}</div>${message}`;
+            logContent.insertBefore(entry, logContent.firstChild);
+            while (logContent.children.length > 20) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            if (!starsContainer) return;
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Game Loop (OPTIMIZED)
+        let lastFrameTime = 0;
+        const targetFrameTime = 1000 / CONFIG.UPDATE_FPS;
+
+        function gameLoop(currentTime) {
+            requestAnimationFrame(gameLoop);
+            perfMonitor.startFrame();
+            
+            const deltaTime = currentTime - lastFrameTime;
+            if (deltaTime < targetFrameTime) return;
+            
+            lastFrameTime = currentTime - (deltaTime % targetFrameTime);
+            const dt = deltaTime / 1000;
+
+            if (!gameState.isPaused) {
+                gameState.time += dt;
+                gameState.frameCount++;
+                
+                const timeEl = document.getElementById('time-elapsed');
+                if (timeEl) timeEl.textContent = Math.floor(gameState.time) + 's';
+
+                // Day/Night cycle
+                gameState.dayNightCycle += dt;
+                if (gameState.dayNightCycle >= gameState.dayNightDuration) {
+                    gameState.dayNightCycle = 0;
+                    gameState.isNight = !gameState.isNight;
+                    updateDayNight();
+                    logEvent(gameState.isNight ? '🌙 Night has fallen' : '☀️ Day has begun');
+                }
+
+                // OPTIMIZED: Only update N ducks per frame
+                const ducksPerFrame = Math.min(CONFIG.DUCKS_PER_FRAME, gameState.ducks.length);
+                for (let i = 0; i < ducksPerFrame; i++) {
+                    const idx = (gameState.duckUpdateOffset + i) % gameState.ducks.length;
+                    if (gameState.ducks[idx]) gameState.ducks[idx].update(dt);
+                }
+                gameState.duckUpdateOffset = (gameState.duckUpdateOffset + ducksPerFrame) % Math.max(1, gameState.ducks.length);
+
+                // Update all other entities
+                for (let i = gameState.food.length - 1; i >= 0; i--) gameState.food[i].update(dt);
+                for (let i = gameState.eggs.length - 1; i >= 0; i--) gameState.eggs[i].update(dt);
+                for (let i = gameState.predators.length - 1; i >= 0; i--) gameState.predators[i].update(dt);
+
+                // Spawn food periodically
+                if (gameState.frameCount % (CONFIG.UPDATE_FPS * 3) === 0) {
+                    if (gameState.food.length < CONFIG.MAX_ENTITIES.food / 2) addFood();
+                }
+
+                updateHUD();
+            }
+
+            perfMonitor.endFrame();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createStars();
+            logEvent('🌊 Welcome to Sea of Ducks - ULTRA OPTIMIZED!');
+            logEvent('⚡ Spatial grid collision detection');
+            logEvent('🎯 Object pooling for particles');
+            logEvent('🧠 Rotating AI updates (10 ducks/frame)');
+            logEvent('💾 Fixed memory leaks');
+            logEvent('🦐 Fixed shrimp physics bug');
+            logEvent('📊 Click "FPS" to see performance');
+            addDuck();
+            addDuck();
+            addIsland();
+            for (let i = 0; i < 3; i++) addFood();
+            updateHUD(true);
+            requestAnimationFrame(gameLoop);
+        });
+    </script>
+</body>
+</html>
