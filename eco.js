@@ -279,17 +279,17 @@ class Island {
         switch(this.size) {
             case 'small':
                 fontSize = 90;
-                grassCount = 4;
+                grassCount = 3;
                 grassHeight = 20;
                 break;
             case 'medium':
                 fontSize = 140;
-                grassCount = 8;
+                grassCount = 4;
                 grassHeight = 25;
                 break;
             case 'large':
                 fontSize = 180;
-                grassCount = 10;
+                grassCount = 5;
                 grassHeight = 30;
                 break;
         }
@@ -761,7 +761,7 @@ class DuckAgent {
         duck.innerHTML = `
             <div class="duck-body" style="filter: drop-shadow(0 0 8px ${this.color.hex}); font-size: ${size};">${duckEmoji}</div>
             <div class="duck-ripple"></div>
-            <div class="duck-thinking"></div>
+            <div class="duck-thinking">Thinking...</div>
             <div class="duck-stats">
                 <div><strong>${this.personality}</strong> ${this.color.name} ${this.gender === 'M' ? '♂️' : '♀️'} #${this.id}</div>
                 <div style="margin-top: 4px; font-size: 9px;">Age: <span class="duck-age">0</span>s | Fertility: <span class="duck-fertility">0</span>%</div>
@@ -1300,7 +1300,7 @@ class DuckAgent {
 
     showThought(text) {
         this.thinkingText = text;
-        this.thinkingTimer = 1000 + Math.random() * 1500;
+        this.thinkingTimer = 600 + Math.random() * 600; // Faster: 0.6-1.2 seconds instead of 1-2.5 seconds
         const bubble = this.element.querySelector('.duck-thinking');
         bubble.textContent = text;
         bubble.classList.add('show');
@@ -1449,7 +1449,7 @@ class Fish {
 }
 
 class Food {
-    constructor(id, x, y, shouldFall = true) {
+    constructor(id, x, y, shouldFall = true, isBaby = false) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -1462,6 +1462,9 @@ class Food {
         this.hasEnteredWater = false;
         this.swimDirection = Math.random() * Math.PI * 2;
         this.swimSpeed = 0.3 + Math.random() * 0.2;
+        this.age = 0;
+        this.isBaby = isBaby;
+        this.growthAge = 10; // Grows up at 10 seconds
         this.element = this.createElement();
         
         if (this.isFalling) {
@@ -1474,13 +1477,30 @@ class Food {
         food.className = 'food-item fade-in';
         food.style.left = this.x + 'px';
         food.style.top = this.y + 'px';
-        food.innerHTML = '🦐';
+        // Baby shrimp are smaller
+        if (this.isBaby) {
+            food.style.fontSize = '12px';
+            food.innerHTML = '🦐';
+        } else {
+            food.style.fontSize = '20px';
+            food.innerHTML = '🦐';
+        }
         document.getElementById('game-container').appendChild(food);
         return food;
     }
 
     update(deltaTime) {
         if (gameState.isPaused) return;
+        
+        // Age the shrimp
+        this.age += deltaTime;
+        
+        // Growth from baby to adult
+        if (this.isBaby && this.age >= this.growthAge) {
+            this.isBaby = false;
+            this.element.style.fontSize = '20px';
+            logEvent(`Baby shrimp #${this.id} grew up! 🦐✨`);
+        }
         
         // Handle falling physics
         if (this.isFalling) {
@@ -1573,11 +1593,11 @@ class Food {
             }
         }
 
-        // Breeding
-        if (this.hunger > 60 && this.reproductionCooldown <= 0 && Math.random() < 0.01) {
+        // Breeding (only adults can breed)
+        if (!this.isBaby && this.hunger > 60 && this.reproductionCooldown <= 0 && Math.random() < 0.01) {
             for (let i = 0; i < gameState.food.length; i++) {
                 const f = gameState.food[i];
-                if (f === this || f.reproductionCooldown > 0) continue;
+                if (f === this || f.reproductionCooldown > 0 || f.isBaby) continue;
                 
                 const dist = Math.sqrt((f.x - this.x) ** 2 + (f.y - this.y) ** 2);
                 if (dist < 60) {
@@ -1620,8 +1640,16 @@ class Food {
         const babyX = (this.x + mate.x) / 2 + (Math.random() - 0.5) * 40;
         const babyY = (this.y + mate.y) / 2 + (Math.random() - 0.5) * 40;
         
-        // Babies don't fall, they're born in water
-        addFoodAt(babyX, babyY, false);
+        // Spawn 1-3 baby shrimp
+        const numBabies = Math.floor(Math.random() * 3) + 1;
+        
+        for (let i = 0; i < numBabies; i++) {
+            const offsetX = (Math.random() - 0.5) * 30;
+            const offsetY = (Math.random() - 0.5) * 30;
+            addBabyShrimp(babyX + offsetX, babyY + offsetY);
+        }
+        
+        logEvent(`Shrimp #${this.id} and #${mate.id} had ${numBabies} baby shrimp! 🦐💕`);
     }
 
     destroy() {
@@ -2034,10 +2062,37 @@ function addDuck() {
         return;
     }
     const container = document.getElementById('game-container');
-    const x = Math.random() * (container.clientWidth - 100);
     const waterSurfaceMin = container.clientHeight * 0.35;
     const waterSurfaceMax = container.clientHeight * 0.45;
-    const y = waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin);
+    
+    // Try to find a non-overlapping position (max 30 attempts)
+    let x, y, attempts = 0, validPosition = false;
+    const minSeparation = 80; // Minimum distance between ducks
+    
+    while (!validPosition && attempts < 30) {
+        x = Math.random() * (container.clientWidth - 100);
+        y = waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin);
+        
+        // Check if this position overlaps with any existing duck
+        validPosition = true;
+        for (const existingDuck of gameState.ducks) {
+            const dx = x - existingDuck.x;
+            const dy = y - existingDuck.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minSeparation) {
+                validPosition = false;
+                break;
+            }
+        }
+        attempts++;
+    }
+    
+    // If we couldn't find a valid position after 30 attempts, just spawn anyway
+    if (!validPosition) {
+        x = Math.random() * (container.clientWidth - 100);
+        y = waterSurfaceMin + Math.random() * (waterSurfaceMax - waterSurfaceMin);
+    }
     
     const duck = new DuckAgent(gameState.nextDuckId++, x, y);
     gameState.ducks.push(duck);
@@ -2212,7 +2267,7 @@ function addFood() {
     const x = Math.random() * (container.clientWidth - 50);
     const y = 50; // Start from top of screen
     
-    const food = new Food(gameState.nextFoodId++, x, y, true); // shouldFall = true
+    const food = new Food(gameState.nextFoodId++, x, y, true, false); // shouldFall = true, isBaby = false
     gameState.food.push(food);
     // Food is added to spatial grid after it falls into water
     updateHUD(true);
@@ -2230,9 +2285,26 @@ function removeFood(food) {
 
 function addFoodAt(x, y, shouldFall = false) {
     if (gameState.food.length >= CONFIG.MAX_ENTITIES.food) return;
-    const food = new Food(gameState.nextFoodId++, x, y, shouldFall);
+    const food = new Food(gameState.nextFoodId++, x, y, shouldFall, false); // isBaby = false
     gameState.food.push(food);
     if (!shouldFall) gameState.spatialGridFood.add(food);
+    updateHUD(true);
+}
+
+function addBabyShrimp(x, y) {
+    if (gameState.food.length >= CONFIG.MAX_ENTITIES.food) return;
+    const container = document.getElementById('game-container');
+    const oceanTop = container.clientHeight * 0.4;
+    
+    // Make sure baby spawns in water
+    if (y < oceanTop) y = oceanTop + 10;
+    
+    const babyShrimp = new Food(gameState.nextFoodId++, x, y, false, true); // shouldFall = false, isBaby = true
+    babyShrimp.hasEnteredWater = true; // Baby is born in water
+    babyShrimp.element.classList.add('swimming');
+    
+    gameState.food.push(babyShrimp);
+    gameState.spatialGridFood.add(babyShrimp);
     updateHUD(true);
 }
 
@@ -2384,7 +2456,6 @@ function calculateBiodiversity() {
     if (gameState.kelp.length > 0) speciesTypes.add('kelp');
     if (gameState.seagrass.length > 0) speciesTypes.add('seagrass');
     if (gameState.algae.length > 0) speciesTypes.add('algae');
-    if (gameState.coralReefs.length > 0) speciesTypes.add('coral');
     
     const uniqueSpecies = speciesTypes.size;
     const maxSpecies = 20;
@@ -2571,10 +2642,7 @@ function gameLoop(currentTime) {
             addKelp();
         }
 
-        // Spawn food periodically
-        if (gameState.frameCount % (CONFIG.UPDATE_FPS * 3) === 0) {
-            if (gameState.food.length < CONFIG.MAX_ENTITIES.food / 2) addFood();
-        }
+        // Food (shrimp) no longer spawns automatically - only via addFood() button
 
         updatePollutionIndicator();
         updateBiodiversityThrottled();
