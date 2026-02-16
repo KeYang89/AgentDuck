@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Ecosystem Simulation</title>
+    <title>Duck Ecosystem - Enhanced Simulation</title>
     <link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -279,6 +279,11 @@
             transform: scale(1.05);
         }
 
+        .island-sand-base {
+            pointer-events: none;
+            will-change: transform;
+        }
+
         .island-base {
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
             position: relative;
@@ -393,11 +398,11 @@
             transform: scale(1.2);
         }
 
-        .sea-creature.jellyfish {
-            animation: jellyfishFloat 4s ease-in-out infinite;
+        .sea-creature.pufferfish {
+            animation: pufferfishFloat 4s ease-in-out infinite;
         }
 
-        @keyframes jellyfishFloat {
+        @keyframes pufferfishFloat {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-15px); }
         }
