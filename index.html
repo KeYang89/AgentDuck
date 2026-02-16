@@ -196,7 +196,7 @@
         /* CSS GRASS BLADES - Replacing emoji */
         .island-grass {
             position: absolute;
-            top: 80%;
+            top: 35%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -282,7 +282,6 @@
         .island-base {
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
             position: relative;
-            animation: islandFloat 5s ease-in-out infinite;
             z-index: 1;
         }
 
@@ -293,11 +292,6 @@
             animation: coralSway 5s ease-in-out infinite;
             cursor: pointer;
             will-change: transform;
-        }
-
-        @keyframes islandFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(1deg); }
         }
 
         @keyframes coralSway {
@@ -694,7 +688,7 @@
 
         .duck-thinking {
             position: absolute;
-            top: -40px;
+            top: -100px;
             left: 50%;
             transform: translateX(-50%);
             background: white;
@@ -708,9 +702,16 @@
             pointer-events: none;
             transition: opacity 0.2s ease;
             z-index: 100;
+            max-width: 200px;
+            white-space: normal;
+            text-align: center;
         }
 
         .duck-thinking.show {
+            opacity: 1;
+        }
+
+        .duck:hover .duck-thinking {
             opacity: 1;
         }
 
@@ -729,7 +730,7 @@
 
         .duck-stats {
             position: absolute;
-            top: -65px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
@@ -1146,7 +1147,7 @@
             }
 
             .controls {
-                bottom: 15px;
+                bottom: 5px;
                 gap: 6px;
             }
 
