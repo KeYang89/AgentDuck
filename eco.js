@@ -275,29 +275,42 @@ class Island {
         island.style.left = this.x + 'px';
         island.style.top = this.y + 'px';
         
-        let fontSize, grassCount, grassHeight;
+        let fontSize, grassCount, grassHeight, baseWidth, baseHeight;
         switch(this.size) {
             case 'small':
-                fontSize = 90;
-                grassCount = 3;
+                fontSize = 80;
+                grassCount = 4;
                 grassHeight = 20;
+                baseWidth = 270; // 3x the island size
+                baseHeight = 180;
                 break;
             case 'medium':
-                fontSize = 140;
-                grassCount = 4;
+                fontSize = 100;
+                grassCount = 5;
                 grassHeight = 25;
+                baseWidth = 420; // 3x the island size
+                baseHeight = 280;
                 break;
             case 'large':
-                fontSize = 180;
-                grassCount = 5;
+                fontSize = 120;
+                grassCount = 6;
                 grassHeight = 30;
+                baseWidth = 540; // 3x the island size
+                baseHeight = 360;
                 break;
         }
         
+        // Calculate offset to center the island on the base
+        const baseOffsetX = (baseWidth - fontSize) / 2;
+        const baseOffsetY = (baseHeight - fontSize) / 2 - 20;
+
+
         let grassHTML = '';
         for (let i = 0; i < grassCount; i++) {
+            const posX = Math.random(1,2)*grassHeight;
+            const posY = Math.random(1,2)*grassHeight;
             grassHTML += `
-                <div class="grass-blade-group" style="height: ${grassHeight}px;">
+                <div class="grass-blade-group" style="height: ${grassHeight}px;top: ${posY}px;left: ${posX}px">
                     <div class="grass-blade"></div>
                     <div class="grass-blade"></div>
                     <div class="grass-blade"></div>
@@ -305,9 +318,48 @@ class Island {
             `;
         }
         
+        // Three blob variations - alternate between them
+        const blobPaths = [
+            'M12.2,-20.1C16.1,-18.9,19.8,-16.2,22.9,-12.6C26,-9.1,28.5,-4.5,28.1,-0.2C27.7,4.1,24.4,8.1,23,14.7C21.6,21.2,22.1,30.1,18.6,33.6C15.1,37,7.5,34.9,1,33.2C-5.5,31.5,-11.1,30.2,-15.8,27.4C-20.5,24.6,-24.3,20.4,-28,15.6C-31.7,10.8,-35.4,5.4,-36.1,-0.4C-36.9,-6.3,-34.8,-12.6,-28.4,-12.8C-22.1,-13.1,-11.5,-7.3,-6.1,-7.7C-0.6,-8,-0.3,-14.4,1.9,-17.7C4.1,-21,8.3,-21.3,12.2,-20.1Z',
+            'M10.5,-13.7C15.8,-15.1,23.8,-16.7,28,-14.5C32.2,-12.3,32.5,-6.1,32.3,-0.1C32.1,5.9,31.4,11.8,28.8,16.8C26.3,21.8,21.8,25.9,16.7,29C11.5,32,5.8,34.1,2.9,29.1C-0.1,24.2,-0.1,12.3,-6.1,9.7C-12.2,7.2,-24.1,14,-27.7,13.9C-31.2,13.9,-26.2,6.9,-24.4,1.1C-22.5,-4.8,-23.7,-9.6,-20.5,-10.3C-17.4,-11,-9.9,-7.6,-5.8,-7C-1.6,-6.3,-0.8,-8.3,0.9,-9.8C2.6,-11.3,5.2,-12.4,10.5,-13.7Z',
+            'M16.8,-27.7C22,-26.1,26.6,-22,31.6,-17C36.6,-12,42.1,-6,42.4,0.1C42.7,6.3,37.7,12.6,33.3,18.8C29,25,25.3,31.2,19.8,34.6C14.4,38.1,7.2,38.8,-0.3,39.4C-7.8,39.9,-15.6,40.3,-20.5,36.5C-25.4,32.7,-27.4,24.8,-28.7,18.1C-30,11.3,-30.6,5.7,-26.7,2.3C-22.8,-1.1,-14.4,-2.3,-10.8,-5.1C-7.2,-7.9,-8.4,-12.3,-7.5,-16.4C-6.5,-20.4,-3.2,-24,1.3,-26.2C5.8,-28.4,11.6,-29.3,16.8,-27.7Z'
+        ];
+        
+        // Select blob based on island ID (cycles through 0, 1, 2)
+        const blobIndex = (this.id - 1) % 3;
+        const blobPath = blobPaths[blobIndex];
+        
         island.innerHTML = `
-            <div class="island-base" style="font-size: ${fontSize}px;">🏝️</div>
-            <div class="island-grass">
+            <svg class="island-sand-base" viewBox="0 0 100 100" width="${baseWidth}" height="${baseHeight}" 
+                 style="position: absolute; left: -${baseOffsetX}px; top: -${baseOffsetY}px; z-index: 3;"
+                 xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="sand-gradient-${this.id}" x1="0" x2="1" y1="1" y2="0">
+                        <stop stop-color="#e8c48a" offset="0%"></stop>
+                        <stop stop-color="#f4d6a3" offset="100%"></stop>
+                    </linearGradient>
+                    <filter id="sand-shadow-${this.id}">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                        <feOffset dx="0" dy="2" result="offsetblur"/>
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.3"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path fill="url(#sand-gradient-${this.id})" 
+                      d="${blobPath}" 
+                      transform="translate(50 50)" 
+                      stroke="#d4b896" 
+                      stroke-width="0.5"
+                      filter="url(#sand-shadow-${this.id})"
+                      opacity="0.95"/>
+            </svg>
+            <div class="island-base" style="font-size: ${fontSize}px; position: relative; z-index: 5;">🌴</div>
+            <div class="island-grass" style="z-index: 4;">
                 ${grassHTML}
             </div>
         `;
@@ -557,16 +609,16 @@ class SeaCreature {
         this.y = y;
         
         const creatureTypes = [
-            { emoji: '🦑', name: 'Squid', speed: 0.6, eatsKelp: false, mobile: true, size: 28, maxAge: 180, breedable: true },
-            { emoji: '🦈', name: 'Shark', speed: 0.8, eatsKelp: false, mobile: true, size: 32, maxAge: 300, breedable: true },
-            { emoji: '🦭', name: 'Seal', speed: 0.5, eatsKelp: false, mobile: true, size: 30, maxAge: 200, breedable: true },
+            { emoji: '🦑', name: 'Squid', speed: 0.6, eatsKelp: false, mobile: true, size: 18, maxAge: 180, breedable: true },
+            { emoji: '🦈', name: 'Shark', speed: 0.8, eatsKelp: false, mobile: true, size: 38, maxAge: 300, breedable: true },
+            { emoji: '🦭', name: 'Seal', speed: 0.5, eatsKelp: false, mobile: true, size: 32, maxAge: 200, breedable: true },
             { emoji: '🦦', name: 'Otter', speed: 0.4, eatsKelp: false, mobile: true, size: 28, maxAge: 150, breedable: true },
-            { emoji: '🪼', name: 'Jellyfish', speed: 0.2, eatsKelp: false, mobile: true, size: 26, class: 'jellyfish', maxAge: 120, breedable: true },
-            { emoji: '🐚', name: 'Shell', speed: 0, eatsKelp: false, mobile: false, size: 24, class: 'shell', maxAge: 600, breedable: false },
-            { emoji: '🦞', name: 'Lobster', speed: 0.3, eatsKelp: true, mobile: true, size: 28, maxAge: 240, breedable: true },
-            { emoji: '🐠', name: 'Tropical Fish', speed: 0.7, eatsKelp: false, mobile: true, size: 26, maxAge: 100, breedable: true },
-            { emoji: '🦀', name: 'Crab', speed: 0.25, eatsKelp: true, mobile: true, size: 26, maxAge: 180, breedable: true },
-            { emoji: '🐬', name: 'Dolphin', speed: 0.9, eatsKelp: false, mobile: true, size: 32, class: 'dolphin', maxAge: 250, breedable: true },
+            { emoji: '🐡', name: 'Pufferfish', speed: 0.2, eatsKelp: false, mobile: true, size: 26, class: 'pufferfish', maxAge: 120, breedable: true },
+            { emoji: '🐚', name: 'Shell', speed: 0, eatsKelp: false, mobile: false, size: 14, class: 'shell', maxAge: 600, breedable: false },
+            { emoji: '🦞', name: 'Lobster', speed: 0.3, eatsKelp: true, mobile: true, size: 8, maxAge: 240, breedable: true },
+            { emoji: '🐠', name: 'Tropical Fish', speed: 0.7, eatsKelp: false, mobile: true, size: 16, maxAge: 100, breedable: true },
+            { emoji: '🦀', name: 'Crab', speed: 0.25, eatsKelp: true, mobile: true, size: 6, maxAge: 180, breedable: true },
+            { emoji: '🐬', name: 'Dolphin', speed: 0.9, eatsKelp: false, mobile: true, size: 38, class: 'dolphin', maxAge: 250, breedable: true },
             { emoji: '🐳', name: 'Whale', speed: 0.3, eatsKelp: false, mobile: true, size: 48, class: 'whale', maxAge: 400, breedable: true }
         ];
         
@@ -1853,7 +1905,7 @@ class Octopus {
     }
 
     openElixir(elixir) {
-        logEvent(`Octopus #${this.id} opened an elixir! 🐙🧪`);
+        logEvent(`Octopus #${this.id} opened an elixir! 🐙⚗️`);
         
         const toxicAlgae = gameState.algae.filter(a => a.type === 'toxic');
         toxicAlgae.forEach(algae => removeAlgae(algae));
@@ -1889,7 +1941,7 @@ class Elixir {
         elixir.className = 'elixir fade-in';
         elixir.style.left = this.x + 'px';
         elixir.style.top = this.y + 'px';
-        elixir.innerHTML = '🧪';
+        elixir.innerHTML = '⚗️';
         document.getElementById('game-container').appendChild(elixir);
         
         // Set target to water surface
@@ -2346,7 +2398,7 @@ function addElixir() {
     const elixir = new Elixir(gameState.nextElixirId++, x, y);
     gameState.elixirs.push(elixir);
     updateHUD(true);
-    logEvent('Added water purification elixir 🧪');
+    logEvent('Added water purification elixir ⚗️');
 }
 
 function removeElixir(elixir) {
@@ -2656,14 +2708,13 @@ function gameLoop(currentTime) {
 window.addEventListener('load', () => {
     createStars();
     
-    logEvent('🌊 Welcome to Sea of Ducks - ULTRA OPTIMIZED!');
-    logEvent('⚡ Spatial grid collision detection (60-80% faster)');
+    logEvent('🌊 Welcome to Sea of Ducks - Ecosystem Simulation!');
+    logEvent('⚡ Spatial grid collision detection loaded');
     logEvent('🎯 Object pooling for particles');
     logEvent('🧠 Rotating AI updates (10 ducks/frame)');
-    logEvent('🪸 Beautiful SVG coral reef on the ocean floor!');
     logEvent('🌿 Seagrass grows naturally around islands!');
     logEvent('🦐 Shrimp fall naturally and swim in water!');
-    logEvent('🧪 Elixir bottles drop into the water with splash!');
+    logEvent('⚗️ Elixir bottles drop into the water with splash!');
     logEvent('📊 Click "Sea of Ducks" to collapse/expand stats');
     logEvent('🦆 Ducks have lifespans and breed');
     logEvent('🐕🐈 Predators hunt and reproduce');
