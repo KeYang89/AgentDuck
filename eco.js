@@ -700,19 +700,42 @@ class SeaCreature {
             this.direction += (Math.random() - 0.5) * Math.PI / 4;
         }
 
-        const moveSpeed = this.speed * deltaTime * 20;
-        this.x += Math.cos(this.direction) * moveSpeed;
-        this.y += Math.sin(this.direction) * moveSpeed;
+const moveSpeed = this.speed * deltaTime * 20;
+const newX = this.x + Math.cos(this.direction) * moveSpeed;
+const newY = this.y + Math.sin(this.direction) * moveSpeed;
 
-        const container = document.getElementById('game-container');
-        const oceanTop = container.clientHeight * 0.4;
-        
-        if (this.x < 0 || this.x > container.clientWidth - 50) {
-            this.direction = Math.PI - this.direction;
-        }
-        if (this.y < oceanTop || this.y > container.clientHeight - 50) {
-            this.direction = -this.direction;
-        }
+// Check for island collisions before moving
+let collidesWithIsland = false;
+for (let i = 0; i < gameState.islands.length; i++) {
+    const island = gameState.islands[i];
+    if (island.isPointOnIsland(newX, newY)) {
+        collidesWithIsland = true;
+        // Bounce away from island
+        const centerOffset = island.size === 'small' ? 45 : (island.size === 'medium' ? 70 : 90);
+        const islandCenterX = island.x + centerOffset;
+        const islandCenterY = island.y + centerOffset;
+        const angleAwayFromIsland = Math.atan2(this.y - islandCenterY, this.x - islandCenterX);
+        this.direction = angleAwayFromIsland + (Math.random() - 0.5) * Math.PI / 4;
+        break;
+    }
+}
+
+// Only move if not colliding with island
+if (!collidesWithIsland) {
+    this.x = newX;
+    this.y = newY;
+}
+
+const container = document.getElementById('game-container');
+const oceanTop = container.clientHeight * 0.4;
+
+if (this.x < 0 || this.x > container.clientWidth - 50) {
+    this.direction = Math.PI - this.direction;
+}
+if (this.y < oceanTop || this.y > container.clientHeight - 50) {
+    this.direction = -this.direction;
+}
+
 
         this.element.style.left = this.x + 'px';
         this.element.style.top = this.y + 'px';
