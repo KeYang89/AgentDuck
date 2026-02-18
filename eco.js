@@ -1952,77 +1952,201 @@ class Octopus {
     }
 }
 
+// ===== ELIXIR WITH ALGAE UPDATE =====
+// Replace the existing Elixir class and openElixir function with this code
+
 class Elixir {
-    constructor(id, x, y) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.targetY = null; // Will be set to water surface
-        this.falling = true;
-        this.velocity = 0;
-        this.gravity = 150; // pixels per second squared
-        this.element = this.createElement();
-    }
+constructor(id, x, y) {
+this.id = id;
+this.x = x;
+this.y = y;
+this.targetY = null;
+this.falling = true;
+this.velocity = 0;
+this.gravity = 150;
+this.algaeCount = 5 + Math.floor(Math.random() * 6); // 5-10 algae per elixir
+this.element = this.createElement();
+}
 
-    createElement() {
-        const elixir = document.createElement('div');
-        elixir.className = 'elixir fade-in';
-        elixir.style.left = this.x + 'px';
-        elixir.style.top = this.y + 'px';
-        elixir.innerHTML = '⚗️';
-        document.getElementById('game-container').appendChild(elixir);
-        
-        // Set target to water surface
-        const container = document.getElementById('game-container');
-        const waterSurface = container.clientHeight * 0.4;
-        this.targetY = waterSurface + 20; // Land just below water surface
-        
-        return elixir;
-    }
 
-    update(deltaTime) {
-        if (this.falling && this.y < this.targetY) {
-            // Apply gravity
-            this.velocity += this.gravity * deltaTime;
-            this.y += this.velocity * deltaTime;
-            
-            // Check if we've reached the water
-            if (this.y >= this.targetY) {
-                this.y = this.targetY;
-                this.falling = false;
-                this.velocity = 0;
-                
-                // Create splash effect when hitting water
-                this.createSplash();
-            }
-            
-            this.updatePosition();
+createElement() {
+    const elixir = document.createElement('div');
+    elixir.className = 'elixir fade-in';
+    elixir.style.left = this.x + 'px';
+    elixir.style.top = this.y + 'px';
+    elixir.innerHTML = '⚗️';
+    elixir.title = `Elixir with ${this.algaeCount} algae inside`;
+    document.getElementById('game-container').appendChild(elixir);
+    
+    const container = document.getElementById('game-container');
+    const waterSurface = container.clientHeight * 0.4;
+    this.targetY = waterSurface + 20;
+    
+    return elixir;
+}
+
+update(deltaTime) {
+    if (this.falling && this.y < this.targetY) {
+        this.velocity += this.gravity * deltaTime;
+        this.y += this.velocity * deltaTime;
+        
+        if (this.y >= this.targetY) {
+            this.y = this.targetY;
+            this.falling = false;
+            this.velocity = 0;
+            this.createSplash();
+        }
+        
+        this.updatePosition();
+    }
+}
+
+updatePosition() {
+    this.element.style.left = this.x + 'px';
+    this.element.style.top = this.y + 'px';
+}
+
+createSplash() {
+    const splashParticles = ['💦', '💧', '🌊'];
+    for (let i = 0; i < 5; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'splash-particle';
+        particle.textContent = splashParticles[Math.floor(Math.random() * splashParticles.length)];
+        particle.style.left = (this.x + Math.random() * 40 - 20) + 'px';
+        particle.style.top = this.y + 'px';
+        particle.style.fontSize = (20 + Math.random() * 20) + 'px';
+        document.getElementById('game-container').appendChild(particle);
+        
+        setTimeout(() => particle.remove(), 1000);
+    }
+}
+
+destroy() {
+    this.element.remove();
+}
+
+
+}
+
+// Update the Octopus.openElixir method - replace the existing one
+Octopus.prototype.openElixir = function(elixir) {
+logEvent(`Octopus #${this.id} opened an elixir with ${elixir.algaeCount} algae! 🐙⚗️`);
+
+
+// Remove only toxic algae (not all algae)
+const toxicAlgae = gameState.algae.filter(a => a.type === 'toxic');
+toxicAlgae.forEach(algae => removeAlgae(algae));
+
+// Reduce pollution
+gameState.waterPollution = Math.max(0, gameState.waterPollution - 40);
+
+// Spawn algae from the elixir
+const container = document.getElementById('game-container');
+for (let i = 0; i < elixir.algaeCount; i++) {
+    setTimeout(() => {
+        const offsetX = (Math.random() - 0.5) * 100;
+        const offsetY = (Math.random() - 0.5) * 100;
+        addAlgaeAt(elixir.x + offsetX, elixir.y + offsetY, 'healthy');
+    }, i * 200);
+}
+
+// Add some seagrass
+for (let i = 0; i < 3; i++) {
+    setTimeout(() => addSeagrass(), i * 200);
+}
+
+// Check if we should spawn sea creatures based on algae count
+checkAlgaeCreatureSpawning();
+
+removeElixir(elixir);
+
+
+};
+
+// New function to add algae at specific position
+function addAlgaeAt(x, y, type = null) {
+if (gameState.algae.length >= CONFIG.MAX_ENTITIES.algae) return;
+
+const container = document.getElementById('game-container');
+const oceanTop = container.clientHeight * 0.4;
+
+// Clamp to water area
+x = Math.max(0, Math.min(x, container.clientWidth - 50));
+y = Math.max(oceanTop, Math.min(y, container.clientHeight - 50));
+
+const algae = new Algae(gameState.nextAlgaeId++, x, y, type);
+gameState.algae.push(algae);
+
+}
+
+// New function to check algae count and spawn creatures
+function checkAlgaeCreatureSpawning() {
+const algaeCount = gameState.algae.length;
+const healthyAlgae = gameState.algae.filter(a => a.type === ‘healthy’).length;
+
+
+// Define creature spawn thresholds
+const creatureSpawnRules = [
+    { emoji: '🦦', name: 'Otter', threshold: 10 },      // Spawns at 10+ algae
+    { emoji: '🐚', name: 'Shell', threshold: 15 },      // Spawns at 15+ algae
+    { emoji: '🦭', name: 'Seal', threshold: 20 },       // Spawns at 20+ algae
+    { emoji: '🐠', name: 'Tropical Fish', threshold: 25 }, // Spawns at 25+ algae
+    { emoji: '🦈', name: 'Shark', threshold: 30 },      // Spawns at 30+ algae
+    { emoji: '🦞', name: 'Lobster', threshold: 35 },    // Spawns at 35+ algae
+    { emoji: '🦀', name: 'Crab', threshold: 40 },       // Spawns at 40+ algae
+    { emoji: '🐬', name: 'Dolphin', threshold: 45 },    // Spawns at 45+ algae
+    { emoji: '🐳', name: 'Whale', threshold: 50 }       // Spawns at 50+ algae
+];
+
+// Check each rule and spawn if threshold met and creature doesn't exist yet
+creatureSpawnRules.forEach(rule => {
+    if (healthyAlgae >= rule.threshold) {
+        // Check if this creature type already exists
+        const exists = gameState.seaCreatures.some(c => c.type.emoji === rule.emoji);
+        
+        if (!exists) {
+            // Spawn the creature
+            spawnSpecificSeaCreature(rule.emoji);
+            logEvent(`🎉 Enough algae (${healthyAlgae})! ${rule.name} ${rule.emoji} appeared!`);
         }
     }
+});
 
-    updatePosition() {
-        this.element.style.left = this.x + 'px';
-        this.element.style.top = this.y + 'px';
-    }
 
-    createSplash() {
-        const splashParticles = ['💦', '💧', '🌊'];
-        for (let i = 0; i < 5; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'splash-particle';
-            particle.textContent = splashParticles[Math.floor(Math.random() * splashParticles.length)];
-            particle.style.left = (this.x + Math.random() * 40 - 20) + 'px';
-            particle.style.top = this.y + 'px';
-            particle.style.fontSize = (20 + Math.random() * 20) + 'px';
-            document.getElementById('game-container').appendChild(particle);
-            
-            setTimeout(() => particle.remove(), 1000);
-        }
-    }
+}
 
-    destroy() {
-        this.element.remove();
-    }
+// New function to spawn a specific type of sea creature
+function spawnSpecificSeaCreature(emoji) {
+if (gameState.seaCreatures.length >= CONFIG.MAX_ENTITIES.seaCreatures) return;
+
+
+const container = document.getElementById('game-container');
+const oceanTop = container.clientHeight * 0.4;
+const x = Math.random() * (container.clientWidth - 50);
+const y = oceanTop + Math.random() * (container.clientHeight * 0.3);
+
+// Find the creature type definition
+const creatureTypes = [
+    { emoji: '🦑', name: 'Squid', speed: 0.6, eatsKelp: false, mobile: true, size: 18, maxAge: 180, breedable: true },
+    { emoji: '🦈', name: 'Shark', speed: 0.8, eatsKelp: false, mobile: true, size: 38, maxAge: 300, breedable: true },
+    { emoji: '🦭', name: 'Seal', speed: 0.5, eatsKelp: false, mobile: true, size: 32, maxAge: 200, breedable: true },
+    { emoji: '🦦', name: 'Otter', speed: 0.4, eatsKelp: false, mobile: true, size: 28, maxAge: 150, breedable: true },
+    { emoji: '🐡', name: 'Pufferfish', speed: 0.2, eatsKelp: false, mobile: true, size: 26, class: 'pufferfish', maxAge: 120, breedable: true },
+    { emoji: '🐚', name: 'Shell', speed: 0, eatsKelp: false, mobile: false, size: 14, class: 'shell', maxAge: 600, breedable: false },
+    { emoji: '🦞', name: 'Lobster', speed: 0.3, eatsKelp: true, mobile: true, size: 8, maxAge: 240, breedable: true },
+    { emoji: '🐠', name: 'Tropical Fish', speed: 0.7, eatsKelp: false, mobile: true, size: 16, maxAge: 100, breedable: true },
+    { emoji: '🦀', name: 'Crab', speed: 0.25, eatsKelp: true, mobile: true, size: 6, maxAge: 180, breedable: true },
+    { emoji: '🐬', name: 'Dolphin', speed: 0.9, eatsKelp: false, mobile: true, size: 38, class: 'dolphin', maxAge: 250, breedable: true },
+    { emoji: '🐳', name: 'Whale', speed: 0.3, eatsKelp: false, mobile: true, size: 48, class: 'whale', maxAge: 400, breedable: true }
+];
+
+const creatureType = creatureTypes.find(t => t.emoji === emoji);
+if (!creatureType) return;
+
+const creature = new SeaCreature(gameState.nextCreatureId++, x, y, creatureType);
+gameState.seaCreatures.push(creature);
+updateHUD(true);
+
 }
 
 class CoralReef {
@@ -3049,8 +3173,10 @@ function gameLoop(currentTime) {
             addKelp();
         }
 
-        // Food (shrimp) no longer spawns automatically - only via addFood() button
-
+        // Food (shrimp) no longer spawns automatically 
+if (gameState.frameCount % (CONFIG.UPDATE_FPS * 5) === 0) { // Every 5 seconds
+    checkAlgaeCreatureSpawning();
+}
         updatePollutionIndicator();
         updateBiodiversityThrottled();
         updateHUD();
