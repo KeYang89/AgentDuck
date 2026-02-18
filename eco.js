@@ -2643,7 +2643,7 @@ constructor(id, x, y) {
 this.id = id;
 this.x = x;
 this.y = y;
-this.state = ‘entering’; // entering, hovering, deploying, collecting, leaving
+this.state = 'entering'; // entering, hovering, deploying, collecting, leaving
 this.targetY = y;
 this.entryY = -150; // Start above screen
 this.hoverDuration = 0;
