@@ -2918,7 +2918,7 @@ gameState.waterPollution <= 0) {
 // Function to spawn UFO
 function spawnUFO() {
 if (gameState.ufos.length > 0) {
-logEvent('UFO is already here! Please wait…');
+logEvent('UFO is already here! Please wait...');
 return;
 }
 
@@ -3056,7 +3056,7 @@ function gameLoop(currentTime) {
         updateHUD();
     }
 // Update UFOs and sample tubes
-for (let i = gameState.ufos.length - 1; i >= 0; i–) {
+for (let i = gameState.ufos.length - 1; i >= 0; i--) {
 gameState.ufos[i].update(dt);
 }
 
