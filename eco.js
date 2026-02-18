@@ -2918,7 +2918,7 @@ gameState.waterPollution <= 0) {
 // Function to spawn UFO
 function spawnUFO() {
 if (gameState.ufos.length > 0) {
-logEvent(‘UFO is already here! Please wait…’);
+logEvent('UFO is already here! Please wait…');
 return;
 }
 
@@ -2937,7 +2937,7 @@ logEvent('🛸 UFO detected! Approaching for sample collection...');
 
 // Celebration effect
 function showCelebration() {
-const container = document.getElementById(‘game-container’);
+const container = document.getElementById('game-container');
 
 
 // Create sparkles
