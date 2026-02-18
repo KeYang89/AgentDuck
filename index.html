@@ -1186,6 +1186,200 @@
                 left: 8px;
             }
         }
+/* UFO Styles */
+.ufo {
+position: absolute;
+z-index: 15;
+pointer-events: none;
+transition: transform 0.3s ease;
+}
+
+.ufo-body {
+font-size: 80px;
+filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.8));
+animation: ufoFloat 2s ease-in-out infinite;
+}
+
+.ufo.hovering .ufo-body {
+animation: ufoHover 1.5s ease-in-out infinite;
+}
+
+@keyframes ufoFloat {
+0%, 100% { transform: translateY(0px) rotate(-2deg); }
+50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes ufoHover {
+0%, 100% { transform: translateY(0px) scale(1); }
+50% { transform: translateY(-5px) scale(1.05); }
+}
+
+.ufo-beam {
+position: absolute;
+top: 70px;
+left: 50%;
+transform: translateX(-50%);
+width: 0;
+height: 0;
+border-left: 100px solid transparent;
+border-right: 100px solid transparent;
+border-top: 150px solid rgba(100, 200, 255, 0.3);
+opacity: 0;
+transition: opacity 0.5s ease;
+}
+
+.ufo.hovering .ufo-beam {
+opacity: 1;
+animation: beamPulse 2s ease-in-out infinite;
+}
+
+@keyframes beamPulse {
+0%, 100% { opacity: 0.3; }
+50% { opacity: 0.6; }
+}
+
+/* Sample Tube Styles */
+.sample-tube {
+position: absolute;
+z-index: 14;
+pointer-events: none;
+}
+
+.tube-string {
+position: absolute;
+top: 0;
+left: 50%;
+transform: translateX(-50%);
+width: 2px;
+height: 0;
+background: linear-gradient(180deg, rgba(200, 200, 200, 0.8) 0%, rgba(150, 150, 150, 0.6) 100%);
+box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.tube-container {
+position: relative;
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.tube-cap {
+font-size: 16px;
+margin-bottom: -2px;
+filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.tube-body {
+width: 20px;
+height: 60px;
+background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(220, 220, 255, 0.8) 100%);
+border: 2px solid rgba(200, 200, 255, 0.6);
+border-radius: 0 0 8px 8px;
+position: relative;
+overflow: hidden;
+box-shadow:
+inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tube-water {
+position: absolute;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 0%;
+background: linear-gradient(180deg, #4ecdc4 0%, #3e8ed0 100%);
+transition: height 0.3s ease;
+border-radius: 0 0 6px 6px;
+}
+
+/* Sample Button Styles */
+#sample-button {
+display: none; /* Hidden until unlocked */
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+border: 3px solid #fff;
+box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+animation: pulse 2s ease-in-out infinite;
+}
+
+#sample-button:hover {
+background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+transform: translateY(-3px);
+}
+
+@keyframes pulse {
+0%, 100% {
+box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+transform: scale(1);
+}
+50% {
+box-shadow: 0 6px 25px rgba(102, 126, 234, 0.8);
+transform: scale(1.05);
+}
+}
+
+.unlock-animation {
+animation: unlockBurst 1s ease-out;
+}
+
+@keyframes unlockBurst {
+0% {
+opacity: 0;
+transform: scale(0) rotate(-180deg);
+}
+50% {
+opacity: 1;
+transform: scale(1.2) rotate(10deg);
+}
+100% {
+opacity: 1;
+transform: scale(1) rotate(0deg);
+}
+}
+
+/* Celebration Sparkles */
+.celebration-sparkle {
+position: absolute;
+pointer-events: none;
+z-index: 150;
+animation: sparkleFloat 2s ease-out forwards;
+}
+
+@keyframes sparkleFloat {
+0% {
+opacity: 0;
+transform: translateY(0) scale(0) rotate(0deg);
+}
+20% {
+opacity: 1;
+transform: translateY(-20px) scale(1.5) rotate(180deg);
+}
+100% {
+opacity: 0;
+transform: translateY(-100px) scale(0.5) rotate(360deg);
+}
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+.ufo-body {
+font-size: 60px;
+}
+    
+.ufo-beam {
+    border-left: 70px solid transparent;
+    border-right: 70px solid transparent;
+    border-top: 100px solid rgba(100, 200, 255, 0.3);
+}
+
+.tube-body {
+    width: 16px;
+    height: 50px;
+}
+
+}
     </style>
 </head>
 <body>
