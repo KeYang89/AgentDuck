@@ -184,6 +184,11 @@ function findNearestInArray(x, y, array, maxDist = Infinity) {
 
 // Game State
 const gameState = {
+    ufos: [],
+    sampleTubes: [],
+    nextUfoId: 1,
+    nextTubeId: 1,
+    sampleButtonUnlocked: false,
     ducks: [],
     fish: [],
     food: [],
@@ -2628,6 +2633,333 @@ function updatePollutionIndicator() {
     }
 }
 
+
+// ===== UFO WATER SAMPLING FEATURE =====
+// Add this to eco.js
+
+// UFO and Sample Collection Classes
+class UFO {
+constructor(id, x, y) {
+this.id = id;
+this.x = x;
+this.y = y;
+this.state = ‘entering’; // entering, hovering, deploying, collecting, leaving
+this.targetY = y;
+this.entryY = -150; // Start above screen
+this.hoverDuration = 0;
+this.tubes = [];
+this.element = this.createElement();
+}
+
+
+createElement() {
+    const ufo = document.createElement('div');
+    ufo.className = 'ufo fade-in';
+    ufo.style.left = this.x + 'px';
+    ufo.style.top = this.entryY + 'px';
+    ufo.innerHTML = `
+        <div class="ufo-body">🛸</div>
+        <div class="ufo-beam"></div>
+    `;
+    document.getElementById('game-container').appendChild(ufo);
+    return ufo;
+}
+
+update(deltaTime) {
+    if (gameState.isPaused) return;
+
+    switch(this.state) {
+        case 'entering':
+            // Descend from top
+            const currentTop = parseFloat(this.element.style.top);
+            if (currentTop < this.targetY) {
+                this.element.style.top = (currentTop + 100 * deltaTime) + 'px';
+            } else {
+                this.state = 'hovering';
+                this.element.style.top = this.targetY + 'px';
+                this.element.classList.add('hovering');
+                logEvent('UFO has arrived and is hovering! 🛸');
+            }
+            break;
+
+        case 'hovering':
+            // Wait a moment before deploying tubes
+            this.hoverDuration += deltaTime;
+            if (this.hoverDuration >= 2) {
+                this.state = 'deploying';
+                this.deployTubes();
+            }
+            break;
+
+        case 'deploying':
+            // Tubes are being lowered
+            break;
+
+        case 'collecting':
+            // Check if all tubes have finished collecting
+            const allCollected = this.tubes.every(tube => tube.state === 'retracting' || tube.state === 'complete');
+            if (allCollected && this.tubes.length > 0) {
+                const allComplete = this.tubes.every(tube => tube.state === 'complete');
+                if (allComplete) {
+                    setTimeout(() => {
+                        this.state = 'leaving';
+                        logEvent('Sample collection complete! UFO departing... 🛸✨');
+                    }, 1000);
+                }
+            }
+            break;
+
+        case 'leaving':
+            // Ascend and remove
+            const leaveTop = parseFloat(this.element.style.top);
+            this.element.style.top = (leaveTop - 150 * deltaTime) + 'px';
+            if (leaveTop < -200) {
+                this.destroy();
+            }
+            break;
+    }
+
+    // Update all tubes
+    this.tubes.forEach(tube => tube.update(deltaTime));
+}
+
+deployTubes() {
+    const numTubes = 5;
+    const spacing = 80;
+    const startX = this.x - (numTubes - 1) * spacing / 2;
+
+    for (let i = 0; i < numTubes; i++) {
+        setTimeout(() => {
+            const tube = new SampleTube(
+                gameState.nextTubeId++,
+                startX + i * spacing,
+                this.targetY + 40,
+                this
+            );
+            this.tubes.push(tube);
+            gameState.sampleTubes.push(tube);
+        }, i * 300);
+    }
+
+    setTimeout(() => {
+        this.state = 'collecting';
+    }, numTubes * 300 + 500);
+}
+
+destroy() {
+    this.tubes.forEach(tube => tube.destroy());
+    this.tubes = [];
+    this.element.remove();
+    const index = gameState.ufos.indexOf(this);
+    if (index > -1) gameState.ufos.splice(index, 1);
+}
+
+
+}
+
+class SampleTube {
+constructor(id, x, y, ufo) {
+this.id = id;
+this.x = x;
+this.startY = y;
+this.y = y;
+this.ufo = ufo;
+this.state = ‘lowering’; // lowering, collecting, retracting, complete
+this.targetDepth = 0;
+this.collectDuration = 0;
+this.waterSampleColor = null;
+this.element = this.createElement();
+this.calculateTargetDepth();
+}
+
+
+calculateTargetDepth() {
+    const container = document.getElementById('game-container');
+    const waterSurface = container.clientHeight * 0.40;
+    this.targetDepth = waterSurface + 100; // Go 100px below water surface
+}
+
+createElement() {
+    const tube = document.createElement('div');
+    tube.className = 'sample-tube fade-in';
+    tube.style.left = this.x + 'px';
+    tube.style.top = this.y + 'px';
+    tube.innerHTML = `
+        <div class="tube-string"></div>
+        <div class="tube-container">
+            <div class="tube-cap">⬛</div>
+            <div class="tube-body">
+                <div class="tube-water"></div>
+            </div>
+        </div>
+    `;
+    document.getElementById('game-container').appendChild(tube);
+    return tube;
+}
+
+update(deltaTime) {
+    if (gameState.isPaused) return;
+
+    const container = document.getElementById('game-container');
+    const waterSurface = container.clientHeight * 0.40;
+
+    switch(this.state) {
+        case 'lowering':
+            // Lower the tube into water
+            this.y += 150 * deltaTime;
+            if (this.y >= this.targetDepth) {
+                this.y = this.targetDepth;
+                this.state = 'collecting';
+                
+                // Add splash when entering water
+                if (this.y > waterSurface && !this.hasEntered) {
+                    this.hasEntered = true;
+                    this.createSplash();
+                }
+            }
+            break;
+
+        case 'collecting':
+            // Collect water sample
+            this.collectDuration += deltaTime;
+            const collectProgress = Math.min(1, this.collectDuration / 2);
+            
+            // Fill tube with water color based on pollution
+            const tubeWater = this.element.querySelector('.tube-water');
+            if (tubeWater) {
+                tubeWater.style.height = (collectProgress * 80) + '%';
+                
+                // Color based on water quality
+                const pollution = gameState.waterPollution;
+                if (pollution < 20) {
+                    tubeWater.style.background = 'linear-gradient(180deg, #4ecdc4 0%, #3e8ed0 100%)';
+                } else if (pollution < 50) {
+                    tubeWater.style.background = 'linear-gradient(180deg, #95e1d3 0%, #6bb6af 100%)';
+                } else {
+                    tubeWater.style.background = 'linear-gradient(180deg, #8b7355 0%, #6b5744 100%)';
+                }
+            }
+
+            if (this.collectDuration >= 2) {
+                this.state = 'retracting';
+                logEvent(`Tube #${this.id} collected pristine water sample! 💧`);
+            }
+            break;
+
+        case 'retracting':
+            // Pull tube back up
+            this.y -= 150 * deltaTime;
+            if (this.y <= this.startY) {
+                this.y = this.startY;
+                this.state = 'complete';
+            }
+            break;
+
+        case 'complete':
+            // Stay attached to UFO
+            break;
+    }
+
+    // Update position
+    this.element.style.top = this.y + 'px';
+    
+    // Update string length
+    const string = this.element.querySelector('.tube-string');
+    if (string) {
+        const stringLength = this.y - this.startY;
+        string.style.height = stringLength + 'px';
+    }
+}
+
+createSplash() {
+    gameState.particlePool.createSplash(this.x, this.y);
+}
+
+destroy() {
+    this.element.remove();
+    const index = gameState.sampleTubes.indexOf(this);
+    if (index > -1) gameState.sampleTubes.splice(index, 1);
+}
+
+
+}
+
+// Add to gameState initialization
+gameState.ufos = [];
+gameState.sampleTubes = [];
+gameState.nextUfoId = 1;
+gameState.nextTubeId = 1;
+gameState.sampleButtonUnlocked = false;
+
+// Function to check if sampling is unlocked
+function checkSampleUnlock() {
+if (!gameState.sampleButtonUnlocked &&
+gameState.biodiversity >= 100 &&
+gameState.waterPollution <= 0) {
+
+
+    gameState.sampleButtonUnlocked = true;
+    
+    // Show the sample button
+    const sampleBtn = document.getElementById('sample-button');
+    if (sampleBtn) {
+        sampleBtn.style.display = 'inline-block';
+        sampleBtn.classList.add('unlock-animation');
+        logEvent('🎉 Perfect ecosystem achieved! Sample collection unlocked! 🛸');
+        
+        // Show celebration
+        showCelebration();
+    }
+}
+
+
+}
+
+// Function to spawn UFO
+function spawnUFO() {
+if (gameState.ufos.length > 0) {
+logEvent(‘UFO is already here! Please wait…’);
+return;
+}
+
+
+const container = document.getElementById('game-container');
+const x = container.clientWidth / 2;
+const hoverY = 100; // Hover 100px from top
+
+const ufo = new UFO(gameState.nextUfoId++, x, hoverY);
+gameState.ufos.push(ufo);
+
+logEvent('🛸 UFO detected! Approaching for sample collection...');
+
+
+}
+
+// Celebration effect
+function showCelebration() {
+const container = document.getElementById(‘game-container’);
+
+
+// Create sparkles
+for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'celebration-sparkle';
+        sparkle.textContent = ['✨', '⭐', '💫', '🌟'][Math.floor(Math.random() * 4)];
+        sparkle.style.left = Math.random() * container.clientWidth + 'px';
+        sparkle.style.top = Math.random() * container.clientHeight + 'px';
+        sparkle.style.fontSize = (20 + Math.random() * 30) + 'px';
+        container.appendChild(sparkle);
+        
+        setTimeout(() => sparkle.remove(), 2000);
+    }, i * 100);
+}
+
+
+}
+
+// Update the game loop to include UFO and sample tube updates
+
 // Optimized Game Loop
 let lastTime = Date.now();
 let algaeSpawnTimer = 0;
@@ -2723,7 +3055,15 @@ function gameLoop(currentTime) {
         updateBiodiversityThrottled();
         updateHUD();
     }
+// Update UFOs and sample tubes
+for (let i = gameState.ufos.length - 1; i >= 0; i–) {
+gameState.ufos[i].update(dt);
+}
 
+// Check if sample button should be unlocked
+if (gameState.frameCount % 60 === 0) { // Check every 60 frames
+checkSampleUnlock();
+}
     perfMonitor.endFrame();
 }
 
