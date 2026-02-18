@@ -2082,7 +2082,7 @@ gameState.algae.push(algae);
 // New function to check algae count and spawn creatures
 function checkAlgaeCreatureSpawning() {
 const algaeCount = gameState.algae.length;
-const healthyAlgae = gameState.algae.filter(a => a.type === ‘healthy’).length;
+const healthyAlgae = gameState.algae.filter(a => a.type === 'healthy').length;
 
 
 // Define creature spawn thresholds
